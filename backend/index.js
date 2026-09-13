@@ -10,7 +10,6 @@ import { clerkMiddleware, getAuth } from '@clerk/express'
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 app.use(
   cors({
@@ -21,12 +20,20 @@ app.use(
 
 app.use(express.json());
 
+let isConnected = false;
+
 const connect = async () => {
+  if (isConnected) {
+    return;
+  }
+
   try {
-    await mongoose.connect(process.env.MONGO)
+    await mongoose.connect(process.env.MONGO);
+    isConnected = true;
     console.log("Connected to MongoDB");
   } catch (err) {
-    console.log(err);
+    console.error("MongoDB connection error:", err);
+    throw err;
   }
 };
 
@@ -59,6 +66,7 @@ app.get("/api/upload", (req, res) => {
 // });
 
 app.post("/api/chats", clerkMiddleware(), async (req, res) => { 
+  await connect();
  const {userId} = getAuth(req);
 
   if (!userId) {
@@ -162,7 +170,6 @@ app.use((err, req, res, next) => {
   res.status(401).send('User not authenticated');
   });
 
-app.listen(port, () => {
-  connect()
-  console.log(`Server running on port ${port}`);
-});
+connect();
+
+export default app;
