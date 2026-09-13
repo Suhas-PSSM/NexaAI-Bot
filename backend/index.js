@@ -113,6 +113,7 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
 });
 
 app.get("/api/userchats", clerkMiddleware(), async (req, res) => {
+  await connect();
   const { userId } = getAuth(req);
 
   try {
@@ -125,6 +126,7 @@ app.get("/api/userchats", clerkMiddleware(), async (req, res) => {
 });
 
 app.get("/api/chats/:id", clerkMiddleware(), async (req, res) => {
+  await connect();
   const { userId } = getAuth(req);
 
   try {
@@ -137,6 +139,7 @@ app.get("/api/chats/:id", clerkMiddleware(), async (req, res) => {
 });
 
 app.put("/api/chats/:id", clerkMiddleware(), async (req, res) => {
+  await connect();
    const { userId } = getAuth(req);
   
    const {question, answer, img} = req.body;
