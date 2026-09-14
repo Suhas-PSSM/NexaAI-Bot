@@ -5,7 +5,8 @@ import ImageKit from "@imagekit/nodejs";
 import mongoose from "mongoose";
 import Chat from "./models/chat.js";
 import UserChats from "./models/userChats.js";
-import { clerkMiddleware, getAuth } from '@clerk/express'
+import { clerkMiddleware, getAuth } from "@clerk/express";
+import model from "./gemini.js";
 
 dotenv.config();
 
@@ -13,12 +14,17 @@ const app = express();
 
 app.use(
   cors({
-  origin:process.env.CLIENT_URL,
-  credentials:true,
-})
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
 );
 
 app.use(express.json());
+
+
+// ===============================
+// MongoDB Connection
+// ===============================
 
 let isConnected = false;
 
@@ -37,142 +43,397 @@ const connect = async () => {
   }
 };
 
+
+// ===============================
+// ImageKit Configuration
+// ===============================
+
 const imagekit = new ImageKit({
   urlEndpoint: process.env.IMAGE_KIT_ENDPOINT,
   publicKey: process.env.IMAGE_KIT_PUBLIC_KEY,
   privateKey: process.env.IMAGE_KIT_PRIVATE_KEY,
 });
 
+
+// ===============================
+// ImageKit Authentication
+// ===============================
+
 app.get("/api/upload", (req, res) => {
   try {
     const result = imagekit.helper.getAuthenticationParameters();
+
     res.json(result);
   } catch (err) {
     console.error(err);
+
     res.status(500).json({
       error: err.message,
     });
   }
 });
 
-// app.get("/api/test", clerkMiddleware(), (req, res) => {
-//   const { userId } = getAuth(req);
-//   if (!userId) {
-//     console.error("User not authenticated");
-//     return res.status(401).send("User not authenticated");
-//   }
-//   console.log("Success!");
-//   res.send("Success!");
-// });
 
-app.post("/api/chats", clerkMiddleware(), async (req, res) => { 
+// ===============================
+// Gemini AI
+// ===============================
+
+app.post("/api/gemini", clerkMiddleware(), async (req, res) => {
+  try {
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "User not authenticated",
+      });
+    }
+
+    const { text, image } = req.body;
+
+    if (!text) {
+      return res.status(400).json({
+        error: "Message text is required",
+      });
+    }
+
+    // Start Gemini chat
+    const chat = model.startChat({
+      history: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: "You are a helpful assistant.",
+            },
+          ],
+        },
+        {
+          role: "model",
+          parts: [
+            {
+              text: "I am a helpful assistant.",
+            },
+          ],
+        },
+      ],
+    });
+
+    // Prepare Gemini input
+    const prompt = image
+      ? [image, text]
+      : [text];
+
+    // Stream Gemini response
+    const result = await chat.sendMessageStream(prompt);
+
+    res.setHeader(
+      "Content-Type",
+      "text/plain; charset=utf-8"
+    );
+
+    res.setHeader(
+      "Cache-Control",
+      "no-cache"
+    );
+
+    res.setHeader(
+      "Connection",
+      "keep-alive"
+    );
+
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+
+      if (chunkText) {
+        res.write(chunkText);
+      }
+    }
+
+    res.end();
+
+  } catch (err) {
+    console.error("Gemini error:", err);
+
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: err.message || "Gemini request failed",
+      });
+    } else {
+      res.end();
+    }
+  }
+});
+
+
+// ===============================
+// Create New Chat
+// ===============================
+
+app.post("/api/chats", clerkMiddleware(), async (req, res) => {
   await connect();
- const {userId} = getAuth(req);
+
+  const { userId } = getAuth(req);
 
   if (!userId) {
     console.error("User not authenticated");
+
     return res.status(401).json({
       error: "User not authenticated",
     });
   }
 
   const { text } = req.body;
- 
- try {
-  // CREATE NEW CHAT
-  const newChat = new Chat({
-    userId: userId,
-    history: [{role: "user", parts: [{text}]}]
- })
 
- const savedChat = await newChat.save();
-
-//  CHECK IF USER EXISTS
-  const userChats = await UserChats.find({userId: userId});
-
-  // IF DOESN'T EXIST, CREATE NEW USER CHATS AND ADD THE NEW CHAT TO THE CHATS ARRAY
-  if(!userChats.length){
-    const newUserChats = new UserChats({
+  try {
+    // CREATE NEW CHAT
+    const newChat = new Chat({
       userId: userId,
-      chats: [{_id: savedChat._id, title: text.substring(0,40),},],
+      history: [
+        {
+          role: "user",
+          parts: [
+            {
+              text,
+            },
+          ],
+        },
+      ],
     });
 
-    await newUserChats.save();
-  }else{
-    // IF EXISTS, ADD THE CHAT TO THE EXISTING ARRAY
-    await UserChats.updateOne(
-      { userId: userId },
-      { $push: { chats: { _id: savedChat._id, title: text.substring(0,40) } } }
-    );
-  }
-  res.status(200).send(newChat._id);
-}catch (err) {
-    console.log(err);
-    res.status(500).send("Error creating chat");
-  }
-});
+    const savedChat = await newChat.save();
 
-app.get("/api/userchats", clerkMiddleware(), async (req, res) => {
-  await connect();
-  const { userId } = getAuth(req);
+    // CHECK IF USER EXISTS
+    const userChats = await UserChats.find({
+      userId: userId,
+    });
 
-  try {
-    const userChats = await UserChats.find({ userId});
-    res.status(200).send(userChats[0].chats);
-  } catch (err) {
-    console.log(err);
-    res.status(500).send("Error fetching user chats");
-  }
-});
-
-app.get("/api/chats/:id", clerkMiddleware(), async (req, res) => {
-  await connect();
-  const { userId } = getAuth(req);
-
-  try {
-    const chat = await Chat.findOne({ _id: req.params.id, userId });
-    res.status(200).send(chat);
-  } catch (err) {
-    console.log(err);
-    res.status(500).send("Error fetching chat");
-  }
-});
-
-app.put("/api/chats/:id", clerkMiddleware(), async (req, res) => {
-  await connect();
-   const { userId } = getAuth(req);
-  
-   const {question, answer, img} = req.body;
-
-   const newItems = [
-    ...(question 
-      ? [{role: "user", parts: [{text: question}], ...(img && { img }) }]
-      : []),
-    {role: "model", parts: [{text: answer}]},
-   ];
-
-  try {
-    const updatedChat = await Chat.updateOne({ _id: req.params.id, userId },
-      {
-        $push: {
-          history: {
-            $each: newItems,
+    // IF USER DOESN'T EXIST
+    if (!userChats.length) {
+      const newUserChats = new UserChats({
+        userId: userId,
+        chats: [
+          {
+            _id: savedChat._id,
+            title: text.substring(0, 40),
           },
+        ],
+      });
+
+      await newUserChats.save();
+
+    } else {
+
+      // IF USER EXISTS
+      await UserChats.updateOne(
+        {
+          userId: userId,
         },
-      }
-    );
-    res.status(200).send(updatedChat);
+        {
+          $push: {
+            chats: {
+              _id: savedChat._id,
+              title: text.substring(0, 40),
+            },
+          },
+        }
+      );
+    }
+
+    res.status(200).send(newChat._id);
+
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error adding conversation!");
+
+    res.status(500).send(
+      "Error creating chat"
+    );
   }
 });
+
+
+// ===============================
+// Get User Chats
+// ===============================
+
+app.get(
+  "/api/userchats",
+  clerkMiddleware(),
+  async (req, res) => {
+
+    await connect();
+
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "User not authenticated",
+      });
+    }
+
+    try {
+      const userChats = await UserChats.find({
+        userId,
+      });
+
+      if (!userChats.length) {
+        return res.status(200).send([]);
+      }
+
+      res.status(200).send(
+        userChats[0].chats
+      );
+
+    } catch (err) {
+      console.log(err);
+
+      res.status(500).send(
+        "Error fetching user chats"
+      );
+    }
+  }
+);
+
+
+// ===============================
+// Get Single Chat
+// ===============================
+
+app.get(
+  "/api/chats/:id",
+  clerkMiddleware(),
+  async (req, res) => {
+
+    await connect();
+
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "User not authenticated",
+      });
+    }
+
+    try {
+      const chat = await Chat.findOne({
+        _id: req.params.id,
+        userId,
+      });
+
+      res.status(200).send(chat);
+
+    } catch (err) {
+      console.log(err);
+
+      res.status(500).send(
+        "Error fetching chat"
+      );
+    }
+  }
+);
+
+
+// ===============================
+// Update Chat
+// ===============================
+
+app.put(
+  "/api/chats/:id",
+  clerkMiddleware(),
+  async (req, res) => {
+
+    await connect();
+
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "User not authenticated",
+      });
+    }
+
+    const {
+      question,
+      answer,
+      img,
+    } = req.body;
+
+    const newItems = [
+      ...(question
+        ? [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: question,
+                },
+              ],
+              ...(img && {
+                img,
+              }),
+            },
+          ]
+        : []),
+
+      {
+        role: "model",
+        parts: [
+          {
+            text: answer,
+          },
+        ],
+      },
+    ];
+
+    try {
+      const updatedChat = await Chat.updateOne(
+        {
+          _id: req.params.id,
+          userId,
+        },
+        {
+          $push: {
+            history: {
+              $each: newItems,
+            },
+          },
+        }
+      );
+
+      res.status(200).send(updatedChat);
+
+    } catch (err) {
+      console.log(err);
+
+      res.status(500).send(
+        "Error adding conversation!"
+      );
+    }
+  }
+);
+
+
+// ===============================
+// Error Handler
+// ===============================
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(401).send('User not authenticated');
-  });
+
+  res.status(401).send(
+    "User not authenticated"
+  );
+});
+
+
+// ===============================
+// MongoDB Initial Connection
+// ===============================
 
 connect();
+
+
+// ===============================
+// Export Express App
+// ===============================
 
 export default app;
