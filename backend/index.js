@@ -255,44 +255,28 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
 // Get User Chats
 // ===============================
 
-app.get(
-  "/api/userchats",
-  clerkMiddleware(),
-  async (req, res) => {
+app.get("/api/userchats", clerkMiddleware(), async (req, res) => {
+  const { userId } = getAuth(req);
 
+  if (!userId) {
+    return res.status(401).json({
+      error: "User not authenticated",
+    });
+  }
+
+  try {
     await connect();
 
-    const { userId } = getAuth(req);
+    const userChats = await UserChats.findOne({ userId });
 
-    if (!userId) {
-      return res.status(401).json({
-        error: "User not authenticated",
-      });
-    }
-
-    try {
-      const userChats = await UserChats.find({
-        userId,
-      });
-
-      if (!userChats.length) {
-        return res.status(200).send([]);
-      }
-
-      res.status(200).send(
-        userChats[0].chats
-      );
-
-    } catch (err) {
-      console.log(err);
-
-      res.status(500).send(
-        "Error fetching user chats"
-      );
-    }
+    res.status(200).json(userChats?.chats || []);
+  } catch (err) {
+    console.log("Error fetching user chats:", err);
+    res.status(500).json({
+      error: "Error fetching user chats",
+    });
   }
-);
-
+});
 
 // ===============================
 // Get Single Chat
