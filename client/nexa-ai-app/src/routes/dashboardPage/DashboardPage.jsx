@@ -33,7 +33,7 @@ const DashboardPage = () => {
             throw new Error(`Request failed: ${response.status}`);
         }
 
-        return response.text();
+        return response.json();
     },
 
     onSuccess: (id) => {
