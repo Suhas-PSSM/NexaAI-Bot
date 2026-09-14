@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { IKContext, IKImage, IKUpload } from "imagekitio-react";
 import './newPrompt.css'
 import Upload from '../upload/Upload';
-import model from '../../lib/gemini.js';
 import Markdown from 'react-markdown';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -16,20 +15,7 @@ const NewPrompt = ({data}) => {
         aiData:{}
     });
 
-    const chat = model.startChat({
-  history: [
-    {
-      role: "user",
-      parts: [{ text: "You are a helpful assistant." }],
-    },
-    {
-      role: "model",
-      parts: [{ text: "I am a helpful assistant." }],
-    },
-  ],
-});
-
-      const endRef = useRef(null);
+        const endRef = useRef(null);
       const formRef = useRef(null);
 
   useEffect(() => {
@@ -75,14 +61,45 @@ const NewPrompt = ({data}) => {
       setQuestion(text);
 
     try{
-    const result = await chat.sendMessageStream(Object.entries(img.aiData).length ? [img.aiData, text] : [text]);
-    let accumulatedText = '';
-    for await (const chunk of result.stream) {
-      const chunkText = chunk.text();
-      console.log(chunkText);
-      accumulatedText += chunkText;
-      setAnswer(accumulatedText);
-    }
+  const response = await fetch(
+  `${import.meta.env.VITE_API_URL}/api/gemini`,
+  {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      text,
+      image: Object.entries(img.aiData).length
+        ? img.aiData
+        : null,
+    }),
+  }
+);
+
+if (!response.ok) {
+  const errorText = await response.text();
+  throw new Error(errorText || "Gemini request failed");
+}
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+let accumulatedText = "";
+
+while (true) {
+  const { value, done } = await reader.read();
+
+  if (done) break;
+
+  const chunkText = decoder.decode(value, {
+    stream: true,
+  });
+
+  accumulatedText += chunkText;
+  setAnswer(accumulatedText);
+}
 
     mutation.mutate();
   }catch(err){
