@@ -1,29 +1,49 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import './dashboardPage.css';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@clerk/react';
 
 const DashboardPage = () => {
+  const { getToken } = useAuth();
 
   const queryClient = useQueryClient()
 
   const navigate = useNavigate();
 
-  const mutation = useMutation({
-    mutationFn: (text) => {
-      return fetch(`${import.meta.env.VITE_API_URL}/api/chats`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }),
-    }).then((res) => res.json());
-  },
-    onSuccess: (id) => {
-      queryClient.invalidateQueries({ queryKey: ['userChats'] });
-      navigate(`/dashboard/chats/${id}`);
+ const mutation = useMutation({
+    mutationFn: async (text) => {
+
+        const token = await getToken();
+
+        const response = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/chats`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+
+                body: JSON.stringify({ text }),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Request failed: ${response.status}`);
+        }
+
+        return response.text();
     },
-  });
+
+    onSuccess: (id) => {
+        queryClient.invalidateQueries({
+            queryKey: ['userChats']
+        });
+
+        navigate(`/dashboard/chats/${id}`);
+    },
+});
   const handleSubmit = async (e) => {
     e.preventDefault();
     const text = e.target.text.value;
