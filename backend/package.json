@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "@clerk/express": "^2.1.44",
+    "@google/generative-ai": "^0.24.1",
     "@imagekit/nodejs": "^7.9.1",
     "cors": "^2.8.6",
     "dotenv": "^17.2.1",
