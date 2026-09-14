@@ -256,8 +256,16 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
 // Get User Chats
 // ===============================
 
-app.get("/api/userchats", clerkMiddleware(), async (req, res) => {
-  const { userId } = getAuth(req);
+  app.get("/api/userchats", clerkMiddleware(), async (req, res) => {
+
+  const auth = getAuth(req);
+
+  console.log("========== CLERK DEBUG ==========");
+  console.log("userId:", auth.userId);
+  console.log("sessionId:", auth.sessionId);
+  console.log("========== END DEBUG ==========");
+
+  const { userId } = auth;
 
   if (!userId) {
     return res.status(401).json({
@@ -271,8 +279,10 @@ app.get("/api/userchats", clerkMiddleware(), async (req, res) => {
     const userChats = await UserChats.findOne({ userId });
 
     res.status(200).json(userChats?.chats || []);
+
   } catch (err) {
     console.log("Error fetching user chats:", err);
+
     res.status(500).json({
       error: "Error fetching user chats",
     });
