@@ -87,7 +87,10 @@ const Upload = ({setImg}) => {
                 style={{display:'none'}}
                 ref={ikUploadRef}
             />
-            {<label onClick={() => ikUploadRef.current.click()}>
+            {<label
+                className="uploadTrigger"
+                onClick={() => ikUploadRef.current.click()}
+            >
                 <img src="/assets/attachment.png" alt="" />
             </label>}
         </IKContext>
