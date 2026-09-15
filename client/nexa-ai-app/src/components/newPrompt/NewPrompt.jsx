@@ -17,6 +17,7 @@ const NewPrompt = ({ data, initialImage }) => {
     isLoading: false,
     error: "",
     dbData: {},
+    previewUrl: '',
     aiData: initialImage || {}
   });
 
@@ -288,7 +289,7 @@ const NewPrompt = ({ data, initialImage }) => {
 
       {/* UPLOADED IMAGE */}
 
-      {img.dbData?.filePath && (
+      {img.dbData?.filePath ? (
         <IKImage
           urlEndpoint={
             import.meta.env.VITE_IMAGE_KIT_ENDPOINT
@@ -304,7 +305,13 @@ const NewPrompt = ({ data, initialImage }) => {
             }
           ]}
         />
-      )}
+      ) : img.previewUrl ? (
+        <img
+          className="uploadedImagePreview"
+          src={img.previewUrl}
+          alt="Selected attachment"
+        />
+      ) : null}
 
 
       {/* USER QUESTION */}

@@ -59,7 +59,11 @@ const Upload = ({setImg}) => {
         reader.onloadend = () => {
         setImg((prev) => ({
             ...prev,
-            isLoading:true, aiData:{
+            isLoading:true,
+            error: "",
+            dbData: {},
+            previewUrl: reader.result,
+            aiData:{
                 inlineData: {
                 data: reader.result.split(',')[1],
                 mimeType: file.type,

@@ -17,6 +17,7 @@ const DashboardPage = () => {
     isLoading: false,
     error: '',
     dbData: {},
+    previewUrl: '',
     aiData: {},
   });
 
@@ -95,7 +96,7 @@ const DashboardPage = () => {
       </div>
       <div className='formContainer'>
         {img.error && <span className="uploadError">{img.error}</span>}
-        {img.dbData?.filePath && (
+        {img.dbData?.filePath ? (
           <IKImage
             className="uploadedImagePreview"
             urlEndpoint={import.meta.env.VITE_IMAGE_KIT_ENDPOINT}
@@ -103,7 +104,13 @@ const DashboardPage = () => {
             width="380"
             transformation={[{ width: "380" }]}
           />
-        )}
+        ) : img.previewUrl ? (
+          <img
+            className="uploadedImagePreview"
+            src={img.previewUrl}
+            alt="Selected attachment"
+          />
+        ) : null}
         <form onSubmit={handleSubmit}>
           <Upload setImg={setImg} />
           <input type="text" name="text" placeholder='Ask me anything...' />
