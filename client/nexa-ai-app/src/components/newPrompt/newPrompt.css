@@ -11,6 +11,11 @@
     border-radius: 12px;
     object-fit: contain;
 }
+
+.uploadError{
+    color: #ff9b9b;
+    font-size: 13px;
+}
     
     .newForm{
         width: 50%;
@@ -41,6 +46,11 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+
+            &:disabled{
+                cursor: not-allowed;
+                opacity: 0.5;
+            }
 
             img{
                 width: 20px;

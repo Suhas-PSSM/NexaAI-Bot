@@ -96,6 +96,7 @@ const NewPrompt = ({ data, initialImage }) => {
             isLoading: false,
             error: "",
             dbData: {},
+            previewUrl: '',
             aiData: {}
           });
 
@@ -239,7 +240,7 @@ const NewPrompt = ({ data, initialImage }) => {
 
     const text = e.target.text.value.trim();
 
-    if (!text) {
+    if (!text || img.isLoading || mutation.isPending) {
       return;
     }
 
@@ -283,6 +284,12 @@ const NewPrompt = ({ data, initialImage }) => {
       {img.isLoading && (
         <div className='loading'>
           Loading...
+        </div>
+      )}
+
+      {img.error && (
+        <div className="uploadError">
+          {img.error}
         </div>
       )}
 
@@ -365,7 +372,10 @@ const NewPrompt = ({ data, initialImage }) => {
           placeholder='Ask me anything...'
         />
 
-        <button type="submit">
+        <button
+          type="submit"
+          disabled={img.isLoading || mutation.isPending}
+        >
           <img
             src="/assets/send.png"
             alt="Send"
