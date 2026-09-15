@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import './dashboardPage.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/react';
+import { IKImage } from 'imagekitio-react';
 import Upload from '../../components/upload/Upload';
 
 const DashboardPage = () => {
@@ -94,6 +95,15 @@ const DashboardPage = () => {
       </div>
       <div className='formContainer'>
         {img.error && <span className="uploadError">{img.error}</span>}
+        {img.dbData?.filePath && (
+          <IKImage
+            className="uploadedImagePreview"
+            urlEndpoint={import.meta.env.VITE_IMAGE_KIT_ENDPOINT}
+            path={img.dbData.filePath}
+            width="380"
+            transformation={[{ width: "380" }]}
+          />
+        )}
         <form onSubmit={handleSubmit}>
           <Upload setImg={setImg} />
           <input type="text" name="text" placeholder='Ask me anything...' />
