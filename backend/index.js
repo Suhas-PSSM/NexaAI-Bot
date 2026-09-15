@@ -190,7 +190,7 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
     });
   }
 
-  const { text } = req.body;
+  const { text, img } = req.body;
 
   try {
     // CREATE NEW CHAT
@@ -204,6 +204,7 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
               text,
             },
           ],
+          ...(img && { img }),
         },
       ],
     });
