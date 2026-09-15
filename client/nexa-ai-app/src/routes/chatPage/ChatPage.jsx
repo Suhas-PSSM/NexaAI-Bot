@@ -10,7 +10,8 @@ const ChatPage = () => {
 
   const { getToken } = useAuth();
 
-  const path = useLocation().pathname
+  const location = useLocation();
+  const path = location.pathname
   const chatId = path.split('/').pop();
 
   const { isPending, error, data} = useQuery({
@@ -61,7 +62,12 @@ const ChatPage = () => {
             </>
           ))}
 
-          {data && <NewPrompt data={data} />}
+          {data && (
+            <NewPrompt
+              data={data}
+              initialImage={location.state?.initialImage}
+            />
+          )}
         </div>
       </div>
     </div>

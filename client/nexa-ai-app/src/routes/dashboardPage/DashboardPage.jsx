@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import './dashboardPage.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/react';
+import Upload from '../../components/upload/Upload';
 
 const DashboardPage = () => {
   const { getToken } = useAuth();
@@ -10,8 +12,15 @@ const DashboardPage = () => {
 
   const navigate = useNavigate();
 
+  const [img, setImg] = useState({
+    isLoading: false,
+    error: '',
+    dbData: {},
+    aiData: {},
+  });
+
  const mutation = useMutation({
-    mutationFn: async (text) => {
+    mutationFn: async ({ text, filePath }) => {
 
         const token = await getToken();
 
@@ -25,7 +34,10 @@ const DashboardPage = () => {
                     Authorization: `Bearer ${token}`,
                 },
 
-                body: JSON.stringify({ text }),
+                body: JSON.stringify({
+                  text,
+                  img: filePath || undefined,
+                }),
             }
         );
 
@@ -36,20 +48,26 @@ const DashboardPage = () => {
         return response.json();
     },
 
-    onSuccess: (id) => {
+    onSuccess: (id, variables) => {
         queryClient.invalidateQueries({
             queryKey: ['userChats']
         });
 
-        navigate(`/dashboard/chats/${id}`);
+        navigate(`/dashboard/chats/${id}`, {
+          state: { initialImage: variables.image },
+        });
     },
 });
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const text = e.target.text.value;
-    if (!text) return;
+    const text = e.target.text.value.trim();
+    if (!text || img.isLoading || mutation.isPending) return;
     
-    mutation.mutate(text);
+    mutation.mutate({
+      text,
+      image: Object.keys(img.aiData).length ? img.aiData : null,
+      filePath: img.dbData?.filePath,
+    });
   };
 
   return (
@@ -75,9 +93,11 @@ const DashboardPage = () => {
         </div>
       </div>
       <div className='formContainer'>
+        {img.error && <span className="uploadError">{img.error}</span>}
         <form onSubmit={handleSubmit}>
+          <Upload setImg={setImg} />
           <input type="text" name="text" placeholder='Ask me anything...' />
-          <button>
+          <button type="submit" disabled={img.isLoading || mutation.isPending}>
             <img src="/assets/send.png" alt="" />
           </button>
         </form>

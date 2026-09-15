@@ -6,7 +6,7 @@ import Markdown from 'react-markdown';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/react';
 
-const NewPrompt = ({ data }) => {
+const NewPrompt = ({ data, initialImage }) => {
 
   const { getToken } = useAuth();
 
@@ -17,7 +17,7 @@ const NewPrompt = ({ data }) => {
     isLoading: false,
     error: "",
     dbData: {},
-    aiData: {}
+    aiData: initialImage || {}
   });
 
   const endRef = useRef(null);
