@@ -31,6 +31,11 @@ const Upload = ({setImg}) => {
 
     const onError = (err) => {
         console.log("Error",err);
+        setImg((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: "Unable to upload the file.",
+        }));
     };
 
     const onSuccess = (res) => {
@@ -38,6 +43,7 @@ const Upload = ({setImg}) => {
         setImg((prev) => ({
             ...prev,
             isLoading:false,
+            error: "",
             dbData:res
         }));
     };
