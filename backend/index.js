@@ -150,6 +150,13 @@ app.post("/api/gemini", clerkMiddleware(), async (req, res) => {
       }
     }
 
+    const completedResponse = await result.response;
+    const finishReason = completedResponse.candidates?.[0]?.finishReason;
+
+    if (finishReason && finishReason !== "STOP") {
+      console.warn("Gemini response finished early:", finishReason);
+    }
+
     res.end();
 
   } catch (err) {
