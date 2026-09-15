@@ -80,7 +80,8 @@
             align-items: center;
             justify-content: space-between;
             gap: 20px;
-            margin-bottom: 10px;
+            padding: 0px 20px;
+            box-sizing: border-box;
 
             input{
                 flex: 1;
@@ -95,7 +96,6 @@
                 width: 40px;
                 height: 40px;
                 flex: 0 0 40px;
-                margin-left: 18px;
                 border-radius: 50%;
                 background-color: #605e68;
                 display: flex;
@@ -125,7 +125,6 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                margin-right: 20px;
 
                 &:disabled{
                     cursor: not-allowed;
