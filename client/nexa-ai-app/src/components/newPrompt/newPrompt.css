@@ -25,8 +25,10 @@
         border-radius: 20px;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 20px;
         padding: 0px 20px;
+        box-sizing: border-box;
 
         input{
             flex: 1;
@@ -37,15 +39,16 @@
             color: #ececec;
         }
 
-        button,label{
+        button,
+        label{
             border-radius: 50%;
             background-color: #605e68;
             border: none;
-            padding: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            padding: 10px;
 
             &:disabled{
                 cursor: not-allowed;
@@ -55,6 +58,18 @@
             img{
                 width: 20px;
                 height: 20px;
+            }
+        }
+
+        .uploadTrigger{
+            width: 40px;
+            height: 40px;
+            flex: 0 0 40px;
+            padding: 0;
+
+            img{
+                width: 22px;
+                height: 22px;
             }
         }
     }

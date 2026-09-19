@@ -142,7 +142,7 @@ const TemporaryChatPage = () => {
           <input
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="Ask anything privately..."
+            placeholder="Ask me anything..."
             aria-label="Temporary chat message"
           />
           <button type="submit" disabled={image.isLoading || isSending || !draft.trim()}>
