@@ -61,6 +61,15 @@
     .chatActions{
         position: relative;
         margin-right: 5px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 140ms ease;
+    }
+
+    .chatRow:hover .chatActions,
+    .chatRow:focus-within .chatActions{
+        opacity: 1;
+        pointer-events: auto;
     }
 
     .moreButton,
