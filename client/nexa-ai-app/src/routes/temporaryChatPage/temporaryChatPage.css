@@ -60,43 +60,6 @@
     font-size: 13px;
 }
 
-.temporaryOptions {
-    display: flex;
-    width: 100%;
-    gap: 18px;
-    margin-top: 16px;
-}
-
-.temporaryOptions button {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    border: 1px solid #514b63;
-    border-radius: 14px;
-    padding: 16px;
-    color: #ece8f8;
-    background: rgba(255, 255, 255, 0.04);
-    cursor: pointer;
-    font: inherit;
-    font-size: 12px;
-    text-align: left;
-    transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
-}
-
-.temporaryOptions button:hover {
-    border-color: #8ab4f8;
-    background: rgba(138, 180, 248, 0.1);
-    transform: translateY(-2px);
-}
-
-.temporaryOptions img {
-    width: 32px;
-    height: 32px;
-    object-fit: contain;
-}
-
 .temporaryMessages {
     display: flex;
     flex: 1;
@@ -246,17 +209,6 @@
 @media (max-width: 700px) {
     .temporaryChatPage {
         padding: 14px;
-    }
-
-    .temporaryOptions {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .temporaryOptions button {
-        flex-direction: row;
-        align-items: center;
-        width: 100%;
     }
 
     .temporaryComposer {

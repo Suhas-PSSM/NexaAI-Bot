@@ -114,20 +114,6 @@ const TemporaryChatPage = () => {
           </div>
           <h2>What would you like to explore privately?</h2>
           <p className="temporaryPrivacyNote">This conversation will not be saved to your chat history.</p>
-          <div className="temporaryOptions">
-            <button type="button" onClick={() => setDraft('Help me brainstorm an idea')}>
-              <img src="/assets/Chat.png" alt="" />
-              <span>Brainstorm an idea</span>
-            </button>
-            <button type="button" onClick={() => setDraft('Help me understand this image')}>
-              <img src="/assets/image_analysis.png" alt="" />
-              <span>Analyze an image</span>
-            </button>
-            <button type="button" onClick={() => setDraft('Help me with my code')}>
-              <img src="/assets/code.png" alt="" />
-              <span>Help me with my code</span>
-            </button>
-          </div>
         </div>
       ) : (
         <div className="temporaryMessages">

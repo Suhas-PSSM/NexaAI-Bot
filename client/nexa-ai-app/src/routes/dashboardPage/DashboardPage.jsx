@@ -79,20 +79,6 @@ const DashboardPage = () => {
           <img src="/assets/logo.png" alt="" />
           <h1>Nexa AI</h1>
         </div>
-        <div className='options'>
-          <div className='option'>
-            <img src="/assets/Chat.png" alt="" />
-            <span>Create a New Chat</span>
-          </div>
-          <div className='option'>
-            <img src="/assets/image_analysis.png" alt="" />
-            <span>Analyze Images</span>
-          </div>
-          <div className='option'>
-            <img src="/assets/code.png" alt="" />
-            <span>Help me with my code</span>
-          </div>
-        </div>
       </div>
       <div className='formContainer'>
         {img.error && <span className="uploadError">{img.error}</span>}
