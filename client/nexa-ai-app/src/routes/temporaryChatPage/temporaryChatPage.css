@@ -159,79 +159,88 @@
 }
 
 .temporaryComposer {
-    width: min(50%, 820px);
+    width: 50%;
     margin: 0 auto;
-    border: 1px solid #403a4c;
     border-radius: 20px;
     background: #2c2937;
-    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.2);
 }
 
 .temporaryComposer form {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 0 20px;
+    box-sizing: border-box;
 }
 
 .temporaryComposer input {
     min-width: 0;
     flex: 1;
-    border: 0;
-    outline: 0;
-    color: #f4f0fb;
+    padding: 20px;
     background: transparent;
-    font: inherit;
+    border: none;
+    outline: none;
+    color: #ececec;
 }
 
 .temporaryComposer input::placeholder {
-    color: #8c8798;
+    color: #888;
 }
 
-.temporaryComposer form > button {
-    display: grid;
-    width: 36px;
-    height: 36px;
-    place-items: center;
-    border: 0;
+.temporaryComposer form > button,
+.temporaryComposer .uploadTrigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
-    background: #3878d5;
+    background: #605e68;
+    border: none;
     cursor: pointer;
+    padding: 10px;
 }
 
-.temporaryComposer form > button:hover:not(:disabled) {
-    background: #4b8be8;
+.temporaryComposer .uploadTrigger {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    padding: 0;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.temporaryComposer .uploadTrigger:hover {
+    background: #706e79;
+    transform: translateY(-1px);
 }
 
 .temporaryComposer form > button:disabled {
     cursor: not-allowed;
-    opacity: 0.45;
+    opacity: 0.5;
 }
 
-.temporaryComposer form > button img {
-    width: 18px;
+.temporaryComposer form > button img,
+.temporaryComposer .uploadTrigger img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
 }
 
 .temporaryPreview {
     display: block;
-    max-width: 180px;
-    max-height: 100px;
-    margin: 12px 12px 0;
-    border-radius: 8px;
+    max-width: 100%;
+    max-height: 300px;
+    width: auto;
+    height: auto;
+    margin: 16px 20px 0;
+    border-radius: 12px;
     object-fit: contain;
 }
 
-.temporaryComposer small,
 .temporaryError {
     display: block;
-    padding: 0 14px 10px;
-    color: #817b8f;
-    font-size: 11px;
-}
-
-.temporaryError {
-    padding-top: 10px;
+    padding: 10px 20px 0;
     color: #ff9b9b;
+    font-size: 13px;
 }
 
 @media (max-width: 700px) {

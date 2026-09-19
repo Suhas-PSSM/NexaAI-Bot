@@ -164,7 +164,6 @@ const TemporaryChatPage = () => {
           </button>
         </form>
         {error && <span className="temporaryError">{error}</span>}
-        <small>Temporary chats are not added to Recent chats.</small>
       </div>
     </div>
   );
