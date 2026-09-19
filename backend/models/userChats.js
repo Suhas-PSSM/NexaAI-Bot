@@ -15,9 +15,17 @@ const userChatsSchema = new mongoose.Schema({
             type: String,
             required: true,
         },
+         pinned:{
+            type: Boolean,
+            default: false,
+        },
+         archived:{
+            type: Boolean,
+            default: false,
+        },
          createdAt:{
             type: Date,
-            default: Date.now(),
+            default: Date.now,
             required: true,
         },
         },

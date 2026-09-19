@@ -224,6 +224,8 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
           {
             _id: savedChat._id,
             title: text.substring(0, 40),
+            pinned: false,
+            archived: false,
           },
         ],
       });
@@ -242,6 +244,8 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
             chats: {
               _id: savedChat._id,
               title: text.substring(0, 40),
+              pinned: false,
+              archived: false,
             },
           },
         }
@@ -286,7 +290,15 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
 
     const userChats = await UserChats.findOne({ userId });
 
-    res.status(200).json(userChats?.chats || []);
+    const chats = [...(userChats?.chats || [])].sort((first, second) => {
+      if (Boolean(first.pinned) !== Boolean(second.pinned)) {
+        return first.pinned ? -1 : 1;
+      }
+
+      return new Date(second.createdAt) - new Date(first.createdAt);
+    });
+
+    res.status(200).json(chats);
 
   } catch (err) {
     console.log("Error fetching user chats:", err);
@@ -296,6 +308,115 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
     });
   }
 });
+
+// ===============================
+// Update Sidebar Chat
+// ===============================
+
+app.patch(
+  "/api/userchats/:id",
+  clerkMiddleware(),
+  async (req, res) => {
+    const { userId } = getAuth(req);
+    const { title, pinned, archived } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const updates = {};
+
+    if (title !== undefined) {
+      if (typeof title !== "string" || !title.trim()) {
+        return res.status(400).json({ error: "A chat title is required" });
+      }
+
+      updates["chats.$.title"] = title.trim().slice(0, 80);
+    }
+
+    if (pinned !== undefined) {
+      if (typeof pinned !== "boolean") {
+        return res.status(400).json({ error: "Pinned must be a boolean" });
+      }
+
+      updates["chats.$.pinned"] = pinned;
+    }
+
+    if (archived !== undefined) {
+      if (typeof archived !== "boolean") {
+        return res.status(400).json({ error: "Archived must be a boolean" });
+      }
+
+      updates["chats.$.archived"] = archived;
+    }
+
+    if (!Object.keys(updates).length) {
+      return res.status(400).json({ error: "No chat changes supplied" });
+    }
+
+    try {
+      await connect();
+
+      const userChats = await UserChats.findOneAndUpdate(
+        { userId, "chats._id": req.params.id },
+        { $set: updates },
+        { new: true }
+      );
+
+      if (!userChats) {
+        return res.status(404).json({ error: "Chat not found" });
+      }
+
+      const updatedChat = userChats.chats.find(
+        (chat) => String(chat._id) === req.params.id
+      );
+
+      return res.status(200).json(updatedChat);
+    } catch (err) {
+      console.error("Error updating sidebar chat:", err);
+      return res.status(500).json({ error: "Error updating chat" });
+    }
+  }
+);
+
+// ===============================
+// Delete Chat
+// ===============================
+
+app.delete(
+  "/api/chats/:id",
+  clerkMiddleware(),
+  async (req, res) => {
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    try {
+      await connect();
+
+      const deletedChat = await Chat.findOneAndDelete({
+        _id: req.params.id,
+        userId,
+      });
+
+      if (!deletedChat) {
+        return res.status(404).json({ error: "Chat not found" });
+      }
+
+      await UserChats.updateOne(
+        { userId },
+        { $pull: { chats: { _id: req.params.id } } }
+      );
+
+      return res.status(204).send();
+    } catch (err) {
+      console.error("Error deleting chat:", err);
+      return res.status(500).json({ error: "Error deleting chat" });
+    }
+  }
+);
 
 // ===============================
 // Get Single Chat
