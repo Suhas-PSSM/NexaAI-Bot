@@ -4,7 +4,7 @@
     height: 100%;
     min-height: 0;
     align-items: center;
-    padding: 20px 24px;
+    padding: 20px 24px 0;
     background: #12101b;
 }
 
@@ -208,6 +208,6 @@
 
 @media (max-width: 700px) {
     .temporaryChatPage {
-        padding: 14px;
+        padding: 14px 14px 0;
     }
 }
