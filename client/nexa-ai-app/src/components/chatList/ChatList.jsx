@@ -208,8 +208,8 @@ const ChatList = () => {
                 Create a new Chat
             </Link>
 
-            <Link to="/">
-                Explore Nexa AI
+            <Link to="/dashboard/temporary">
+                Temporary chat
             </Link>
 
             <Link to="/">
