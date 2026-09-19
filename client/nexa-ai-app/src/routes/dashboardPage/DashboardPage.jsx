@@ -20,6 +20,7 @@ const DashboardPage = () => {
     previewUrl: '',
     aiData: {},
   });
+  const [draft, setDraft] = useState('');
 
  const mutation = useMutation({
     mutationFn: async ({ text, filePath }) => {
@@ -51,6 +52,7 @@ const DashboardPage = () => {
     },
 
     onSuccess: (id, variables) => {
+      setDraft('');
         queryClient.invalidateQueries({
             queryKey: ['userChats']
         });
@@ -99,8 +101,17 @@ const DashboardPage = () => {
         ) : null}
         <form onSubmit={handleSubmit}>
           <Upload setImg={setImg} />
-          <input type="text" name="text" placeholder='Ask me anything...' />
-          <button type="submit" disabled={img.isLoading || mutation.isPending}>
+          <input
+            type="text"
+            name="text"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder='Ask me anything...'
+          />
+          <button
+            type="submit"
+            disabled={img.isLoading || mutation.isPending || !draft.trim()}
+          >
             <img src="/assets/send.png" alt="" />
           </button>
         </form>

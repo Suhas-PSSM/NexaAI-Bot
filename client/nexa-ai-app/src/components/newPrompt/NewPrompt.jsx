@@ -12,6 +12,7 @@ const NewPrompt = ({ data, initialImage }) => {
 
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
+  const [draft, setDraft] = useState('');
 
   const [img, setImg] = useState({
     isLoading: false,
@@ -91,6 +92,7 @@ const NewPrompt = ({ data, initialImage }) => {
 
           setQuestion('');
           setAnswer('');
+          setDraft('');
 
           setImg({
             isLoading: false,
@@ -238,7 +240,7 @@ const NewPrompt = ({ data, initialImage }) => {
 
     e.preventDefault();
 
-    const text = e.target.text.value.trim();
+    const text = draft.trim();
 
     if (!text || img.isLoading || mutation.isPending) {
       return;
@@ -369,12 +371,14 @@ const NewPrompt = ({ data, initialImage }) => {
         <input
           type='text'
           name='text'
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
           placeholder='Ask me anything...'
         />
 
         <button
           type="submit"
-          disabled={img.isLoading || mutation.isPending}
+          disabled={img.isLoading || mutation.isPending || !draft.trim()}
         >
           <img
             src="/assets/send.png"
