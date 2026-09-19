@@ -89,7 +89,7 @@ app.post("/api/gemini", clerkMiddleware(), async (req, res) => {
       });
     }
 
-    const { text, image } = req.body;
+    const { text, image, history = [] } = req.body;
 
     if (!text) {
       return res.status(400).json({
@@ -97,7 +97,23 @@ app.post("/api/gemini", clerkMiddleware(), async (req, res) => {
       });
     }
 
-    // Start Gemini chat
+    const conversationHistory = Array.isArray(history)
+      ? history
+          .filter(
+            (message) =>
+              message &&
+              (message.role === "user" || message.role === "model") &&
+              typeof message.text === "string" &&
+              message.text.trim()
+          )
+          .slice(-30)
+          .map((message) => ({
+            role: message.role,
+            parts: [{ text: message.text.trim() }],
+          }))
+      : [];
+
+    // Start Gemini chat without persisting the conversation.
     const chat = model.startChat({
       history: [
         {
@@ -116,6 +132,7 @@ app.post("/api/gemini", clerkMiddleware(), async (req, res) => {
             },
           ],
         },
+        ...conversationHistory,
       ],
     });
 
