@@ -105,34 +105,46 @@ const TemporaryChatPage = () => {
 
   return (
     <div className="temporaryChatPage">
-      <header className="temporaryHeader">
-        <div>
+      {!messages.length ? (
+        <div className="temporaryWelcome">
           <span className="temporaryBadge">PRIVATE MODE</span>
-          <h1>Temporary chat</h1>
-          <p>This conversation will not be saved to your chat history.</p>
-        </div>
-        <button type="button" onClick={reset} disabled={!messages.length && !draft}>
-          New temporary chat
-        </button>
-      </header>
-
-      <div className="temporaryMessages">
-        {!messages.length && (
-          <div className="temporaryEmpty">
+          <div className="temporaryLogo">
             <img src="/assets/logo.png" alt="" />
-            <h2>What would you like to explore privately?</h2>
-            <p>Temporary chats disappear when you leave or refresh this page.</p>
+            <h1>Nexa AI</h1>
           </div>
-        )}
+          <h2>What would you like to explore privately?</h2>
+          <p className="temporaryPrivacyNote">This conversation will not be saved to your chat history.</p>
+          <div className="temporaryOptions">
+            <button type="button" onClick={() => setDraft('Help me brainstorm an idea')}>
+              <img src="/assets/Chat.png" alt="" />
+              <span>Brainstorm an idea</span>
+            </button>
+            <button type="button" onClick={() => setDraft('Help me understand this image')}>
+              <img src="/assets/image_analysis.png" alt="" />
+              <span>Analyze an image</span>
+            </button>
+            <button type="button" onClick={() => setDraft('Help me with my code')}>
+              <img src="/assets/code.png" alt="" />
+              <span>Help me with my code</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="temporaryMessages">
+          <div className="temporaryConversationBar">
+            <span className="temporaryBadge">PRIVATE MODE</span>
+            <button type="button" onClick={reset}>New temporary chat</button>
+          </div>
 
-        {messages.map((message, index) => (
-          <div className={`temporaryMessage ${message.role}`} key={`${message.role}-${index}`}>
-            <span className="messageLabel">{message.role === 'user' ? 'You' : 'Nexa AI'}</span>
-            <Markdown>{message.text || 'Thinking...'}</Markdown>
-          </div>
-        ))}
-        <div ref={endRef} />
-      </div>
+          {messages.map((message, index) => (
+            <div className={`temporaryMessage ${message.role}`} key={`${message.role}-${index}`}>
+              <span className="messageLabel">{message.role === 'user' ? 'You' : 'Nexa AI'}</span>
+              <Markdown>{message.text || 'Thinking...'}</Markdown>
+            </div>
+          ))}
+          <div ref={endRef} />
+        </div>
+      )}
 
       <div className="temporaryComposer">
         {image.error && <span className="temporaryError">{image.error}</span>}

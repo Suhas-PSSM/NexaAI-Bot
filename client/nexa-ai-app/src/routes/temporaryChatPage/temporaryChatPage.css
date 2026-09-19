@@ -3,17 +3,48 @@
     flex-direction: column;
     height: 100%;
     min-height: 0;
-    padding: 34px clamp(24px, 6vw, 96px) 24px;
-    background: radial-gradient(circle at 70% 0%, #252134 0%, #12101b 42%, #0e0c16 100%);
+    align-items: center;
+    padding: 20px 24px;
+    background: #12101b;
 }
 
-.temporaryHeader {
+.temporaryWelcome {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: min(700px, 100%);
+    gap: 18px;
+    text-align: center;
+}
+
+.temporaryLogo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    opacity: 0.8;
+}
+
+.temporaryLogo img {
+    width: 58px;
+    height: 58px;
+}
+
+.temporaryLogo h1 {
+    margin: 0;
+    font-size: clamp(42px, 6vw, 64px);
+    background: linear-gradient(to right, #217bfe, #e55571);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.temporaryWelcome h2 {
+    margin: 8px 0 0;
+    color: #ececec;
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 400;
 }
 
 .temporaryBadge {
@@ -23,40 +54,47 @@
     letter-spacing: 1.5px;
 }
 
-.temporaryHeader h1 {
-    margin: 8px 0 5px;
-    color: #f5f2ff;
-    font-size: clamp(24px, 3vw, 38px);
-    font-weight: 500;
-}
-
-.temporaryHeader p,
-.temporaryEmpty p {
+.temporaryPrivacyNote {
     margin: 0;
     color: #9993aa;
     font-size: 13px;
 }
 
-.temporaryHeader button {
-    flex: 0 0 auto;
+.temporaryOptions {
+    display: flex;
+    width: 100%;
+    gap: 18px;
+    margin-top: 16px;
+}
+
+.temporaryOptions button {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
     border: 1px solid #514b63;
-    border-radius: 8px;
-    padding: 10px 14px;
+    border-radius: 14px;
+    padding: 16px;
     color: #ece8f8;
     background: rgba(255, 255, 255, 0.04);
     cursor: pointer;
     font: inherit;
     font-size: 12px;
+    text-align: left;
+    transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
 }
 
-.temporaryHeader button:hover:not(:disabled) {
+.temporaryOptions button:hover {
     border-color: #8ab4f8;
     background: rgba(138, 180, 248, 0.1);
+    transform: translateY(-2px);
 }
 
-.temporaryHeader button:disabled {
-    cursor: default;
-    opacity: 0.45;
+.temporaryOptions img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
 }
 
 .temporaryMessages {
@@ -66,31 +104,17 @@
     gap: 20px;
     min-height: 0;
     overflow-y: auto;
-    padding: 34px 4px 24px;
+    width: min(820px, 100%);
+    padding: 10px 4px 24px;
     scrollbar-width: thin;
 }
 
-.temporaryEmpty {
+.temporaryConversationBar {
     display: flex;
-    flex: 1;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-
-.temporaryEmpty img {
-    width: 52px;
-    height: 52px;
-    margin-bottom: 18px;
-    opacity: 0.8;
-}
-
-.temporaryEmpty h2 {
-    margin: 0 0 8px;
-    color: #e9e4f2;
-    font-size: clamp(18px, 2vw, 25px);
-    font-weight: 400;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .temporaryMessage {
@@ -111,6 +135,17 @@
     background: rgba(255, 255, 255, 0.035);
 }
 
+.temporaryConversationBar button {
+    border: 1px solid #514b63;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #ece8f8;
+    background: rgba(255, 255, 255, 0.04);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+}
+
 .messageLabel {
     display: block;
     margin-bottom: 6px;
@@ -124,11 +159,11 @@
 }
 
 .temporaryComposer {
-    width: min(820px, 100%);
+    width: min(50%, 820px);
     margin: 0 auto;
     border: 1px solid #403a4c;
-    border-radius: 14px;
-    background: #211e2a;
+    border-radius: 20px;
+    background: #2c2937;
     box-shadow: 0 14px 35px rgba(0, 0, 0, 0.2);
 }
 
@@ -201,15 +236,21 @@
 
 @media (max-width: 700px) {
     .temporaryChatPage {
-        padding: 22px 14px 14px;
+        padding: 14px;
     }
 
-    .temporaryHeader {
+    .temporaryOptions {
         flex-direction: column;
-        gap: 14px;
+        gap: 10px;
     }
 
-    .temporaryHeader button {
+    .temporaryOptions button {
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+    }
+
+    .temporaryComposer {
         width: 100%;
     }
 }
