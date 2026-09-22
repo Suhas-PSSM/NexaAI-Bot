@@ -49,6 +49,19 @@ const ChatList = () => {
     });
 
     const chatMutation = useMutation({
+        onMutate: async ({ id, payload }) => {
+            await queryClient.cancelQueries({ queryKey: ['userChats'] });
+
+            const previousChats = queryClient.getQueryData(['userChats']);
+
+            queryClient.setQueryData(['userChats'], (chats) =>
+                chats?.map((chat) =>
+                    chat._id === id ? { ...chat, ...payload } : chat
+                )
+            );
+
+            return { previousChats };
+        },
         mutationFn: async ({ id, action, payload }) => {
             const response = await apiFetch(
                 `${import.meta.env.VITE_API_URL}${action === 'delete' ? `/api/chats/${id}` : `/api/userchats/${id}`}`,
@@ -75,7 +88,11 @@ const ChatList = () => {
                 navigate('/dashboard');
             }
         },
-        onError: (mutationError) => {
+        onError: (mutationError, _variables, context) => {
+            if (context?.previousChats) {
+                queryClient.setQueryData(['userChats'], context.previousChats);
+            }
+
             setNotice(mutationError.message || 'Unable to update chat');
         },
     });
