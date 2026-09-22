@@ -3,6 +3,8 @@ import { useAuth } from '@clerk/react';
 import { IKImage } from 'imagekitio-react';
 import Markdown from 'react-markdown';
 import Upload from '../../components/upload/Upload';
+import '../chatPage/chatPage.css';
+import '../../components/newPrompt/newPrompt.css';
 import './temporaryChatPage.css';
 
 const emptyImage = {
@@ -104,40 +106,41 @@ const TemporaryChatPage = () => {
   };
 
   return (
-    <div className="temporaryChatPage">
-      {!messages.length ? (
-        <div className="temporaryWelcome">
-          <span className="temporaryBadge">PRIVATE MODE</span>
-          <div className="temporaryLogo">
-            <img src="/assets/logo.png" alt="" />
-            <h1>Nexa AI</h1>
-          </div>
-          <h2>What would you like to explore privately?</h2>
-          <p className="temporaryPrivacyNote">This conversation will not be saved to your chat history.</p>
-        </div>
-      ) : (
-        <div className="temporaryMessages">
-          <div className="temporaryConversationBar">
-            <span className="temporaryBadge">PRIVATE MODE</span>
-            <button type="button" onClick={reset}>New temporary chat</button>
-          </div>
+    <div className="ChatPage temporaryChatPage">
+      <div className="temporaryToolbar">
+        <span className="temporaryBadge">PRIVATE MODE</span>
+        {messages.length > 0 && (
+          <button type="button" onClick={reset}>New temporary chat</button>
+        )}
+      </div>
+
+      <div className="wrapper">
+        <div className="chat">
+          {!messages.length && (
+            <div className="temporaryWelcome">
+              <h1>What would you like to explore privately?</h1>
+              <p>This conversation will not be saved to your chat history.</p>
+            </div>
+          )}
 
           {messages.map((message, index) => (
-            <div className={`temporaryMessage ${message.role}`} key={`${message.role}-${index}`}>
-              <span className="messageLabel">{message.role === 'user' ? 'You' : 'Nexa AI'}</span>
+            <div
+              className={`message ${message.role === 'user' ? 'user' : ''}`}
+              key={`${message.role}-${index}`}
+            >
               <Markdown>{message.text || 'Thinking...'}</Markdown>
             </div>
           ))}
-          <div ref={endRef} />
+          <div className="endChat" ref={endRef} />
         </div>
-      )}
+      </div>
 
       <div className="temporaryComposer">
         {image.error && <span className="temporaryError">{image.error}</span>}
         {image.previewUrl && (
-          <img className="temporaryPreview" src={image.previewUrl} alt="Selected attachment" />
+          <img className="uploadedImagePreview" src={image.previewUrl} alt="Selected attachment" />
         )}
-        <form onSubmit={sendMessage}>
+        <form className="newForm" onSubmit={sendMessage}>
           <Upload setImg={setImage} />
           <input
             value={draft}

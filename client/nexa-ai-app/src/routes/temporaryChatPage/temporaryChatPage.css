@@ -1,104 +1,30 @@
 .temporaryChatPage {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-    align-items: center;
-    padding: 20px 24px 0;
-    background: #12101b;
+    padding-top: 20px;
 }
 
-.temporaryWelcome {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: min(700px, 100%);
-    gap: 18px;
-    text-align: center;
-}
-
-.temporaryLogo {
+.temporaryToolbar {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
     display: flex;
     align-items: center;
-    gap: 16px;
-    opacity: 0.2;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: none;
 }
 
-.temporaryLogo img {
-    width: 58px;
-    height: 58px;
-}
-
-.temporaryLogo h1 {
-    margin: 0;
-    font-size: clamp(42px, 6vw, 64px);
-    background: linear-gradient(to right, #217bfe, #e55571);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-}
-
-.temporaryWelcome h2 {
-    margin: 8px 0 0;
-    color: #ececec;
-    font-size: clamp(22px, 3vw, 32px);
-    font-weight: 400;
+.temporaryToolbar > * {
+    pointer-events: auto;
 }
 
 .temporaryBadge {
     color: #9cc8ff;
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: 1.5px;
 }
 
-.temporaryPrivacyNote {
-    margin: 0;
-    color: #9993aa;
-    font-size: 13px;
-}
-
-.temporaryMessages {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 20px;
-    min-height: 0;
-    overflow-y: auto;
-    width: min(820px, 100%);
-    padding: 10px 4px 24px;
-    scrollbar-width: thin;
-}
-
-.temporaryConversationBar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.temporaryMessage {
-    width: min(760px, 92%);
-    padding: 15px 18px;
-    border-radius: 12px;
-    line-height: 1.6;
-}
-
-.temporaryMessage.user {
-    align-self: flex-end;
-    background: #302b3d;
-}
-
-.temporaryMessage.model {
-    align-self: flex-start;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    background: rgba(255, 255, 255, 0.035);
-}
-
-.temporaryConversationBar button {
+.temporaryToolbar button {
     border: 1px solid #514b63;
     border-radius: 8px;
     padding: 8px 12px;
@@ -109,94 +35,15 @@
     font-size: 12px;
 }
 
-.messageLabel {
-    display: block;
-    margin-bottom: 6px;
-    color: #9fcef7;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.temporaryMessage p {
-    margin: 0;
-}
-
 .temporaryComposer {
-    width: 50%;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.temporaryComposer .newForm {
+    position: relative;
     margin: 0 auto;
-    border-radius: 20px;
-    background: #2c2937;
-}
-
-.temporaryComposer form {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 0 20px;
-    box-sizing: border-box;
-}
-
-.temporaryComposer input {
-    min-width: 0;
-    flex: 1;
-    padding: 20px;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: #ececec;
-}
-
-.temporaryComposer input::placeholder {
-    color: #888;
-}
-
-.temporaryComposer form > button,
-.temporaryComposer .uploadTrigger {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: #605e68;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-}
-
-.temporaryComposer .uploadTrigger {
-    width: 40px;
-    height: 40px;
-    flex: 0 0 40px;
-    padding: 0;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-.temporaryComposer .uploadTrigger:hover {
-    background: #706e79;
-    transform: translateY(-1px);
-}
-
-.temporaryComposer form > button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.temporaryComposer form > button img,
-.temporaryComposer .uploadTrigger img {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-}
-
-.temporaryPreview {
-    display: block;
-    max-width: 100%;
-    max-height: 300px;
-    width: auto;
-    height: auto;
-    margin: 16px 20px 0;
-    border-radius: 12px;
-    object-fit: contain;
 }
 
 .temporaryError {
@@ -208,6 +55,11 @@
 
 @media (max-width: 700px) {
     .temporaryChatPage {
-        padding: 14px 14px 0;
+        padding-top: 14px;
+    }
+
+    .temporaryToolbar {
+        top: 14px;
+        padding: 0 14px;
     }
 }
