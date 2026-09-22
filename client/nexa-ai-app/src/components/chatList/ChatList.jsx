@@ -223,7 +223,7 @@ const ChatList = () => {
     return (
         <div className="chatList">
             <Link to="/dashboard">
-                Create a new Chat
+                New chat
             </Link>
 
             <Link
@@ -232,10 +232,6 @@ const ChatList = () => {
                 aria-current={location.pathname === '/dashboard/temporary' ? 'page' : undefined}
             >
                 Temporary chat
-            </Link>
-
-            <Link to="/">
-                Contact
             </Link>
 
             <hr />
