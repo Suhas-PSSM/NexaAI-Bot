@@ -199,7 +199,8 @@ const ChatList = () => {
         </div>
     );
 
-    const activeChats = data?.filter((chat) => !chat.archived) || [];
+    const pinnedChats = data?.filter((chat) => !chat.archived && chat.pinned) || [];
+    const recentChats = data?.filter((chat) => !chat.archived && !chat.pinned) || [];
     const archivedChats = data?.filter((chat) => chat.archived) || [];
 
     return (
@@ -222,19 +223,26 @@ const ChatList = () => {
 
             <hr />
 
-            <span className="title">
+            {pinnedChats.length > 0 && (
+                <>
+                    <span className="title">PINNED</span>
+                    <div className="list pinnedList">{pinnedChats.map(renderChat)}</div>
+                </>
+            )}
+
+            <span className={`title ${pinnedChats.length ? 'recentTitle' : ''}`}>
                 RECENT CHATS
             </span>
 
-            <div className="list">
+            <div className="list recentList">
                 {!isLoaded
                     ? "Loading..."
                     : isPending
                     ? "Loading..."
                     : error
                     ? "Something went wrong"
-                    : activeChats.length
-                    ? activeChats.map(renderChat)
+                    : recentChats.length
+                    ? recentChats.map(renderChat)
                     : "No recent chats"
                 }
             </div>
