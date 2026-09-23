@@ -6,15 +6,28 @@ import mongoose from "mongoose";
 import Chat from "./models/chat.js";
 import UserChats from "./models/userChats.js";
 import { clerkMiddleware, getAuth } from "@clerk/express";
-import model from "./gemini.js";
+import { getGeminiModel } from "./gemini.js";
 
 const app = express();
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  ...(process.env.CLIENT_URLS || "").split(","),
+  "https://nexa-ai-frontend-eta.vercel.app",
+].map((origin) => origin.trim()).filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
+    },
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 );
 
@@ -112,7 +125,7 @@ app.post("/api/gemini", clerkMiddleware(), async (req, res) => {
       : [];
 
     // Start Gemini chat without persisting the conversation.
-    const chat = model.startChat({
+    const chat = getGeminiModel().startChat({
       history: [
         {
           role: "user",

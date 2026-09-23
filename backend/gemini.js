@@ -15,18 +15,24 @@ const safetySettings = [
   },
 ];
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error("GEMINI_API_KEY is not configured");
-}
+let model;
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+export const getGeminiModel = () => {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY is not configured");
+  }
 
-const model = genAI.getGenerativeModel({
-  model: "gemini-3.5-flash",
-  safetySettings,
-  generationConfig: {
-    maxOutputTokens: 8192,
-  },
-});
+  if (!model) {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-export default model;
+    model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+      safetySettings,
+      generationConfig: {
+        maxOutputTokens: 8192,
+      },
+    });
+  }
+
+  return model;
+};
