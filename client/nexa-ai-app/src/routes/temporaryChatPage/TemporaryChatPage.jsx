@@ -64,8 +64,21 @@ const TemporaryChatPage = () => {
         }),
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error('Temporary chat could not generate a response');
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = errorText;
+
+        try {
+          errorMessage = JSON.parse(errorText).error || errorText;
+        } catch {
+          // Keep the raw response when the server did not return JSON.
+        }
+
+        throw new Error(errorMessage || `Request failed with status ${response.status}`);
+      }
+
+      if (!response.body) {
+        throw new Error('No response body received from Gemini');
       }
 
       const reader = response.body.getReader();
