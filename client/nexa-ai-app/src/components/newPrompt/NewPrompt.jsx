@@ -8,7 +8,7 @@ import { useAuth } from '@clerk/react';
 
 const NewPrompt = ({ data, initialImage }) => {
 
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
 
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -46,12 +46,13 @@ const NewPrompt = ({ data, initialImage }) => {
 
     mutationFn: async () => {
 
-      const token = await getToken();
+      const token = await getToken({ skipCache: true });
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/chats/${data._id}`,
         {
           method: "PUT",
+          credentials: "include",
 
           headers: {
             "Content-Type": "application/json",
@@ -124,7 +125,11 @@ const NewPrompt = ({ data, initialImage }) => {
     try {
 
       // Get Clerk authentication token
-      const token = await getToken();
+      if (!isLoaded || !isSignedIn) {
+        throw new Error('Please sign in before sending a message.');
+      }
+
+      const token = await getToken({ skipCache: true });
 
       if (!token) {
         throw new Error("User authentication token not available");
@@ -138,6 +143,7 @@ const NewPrompt = ({ data, initialImage }) => {
         `${import.meta.env.VITE_API_URL}/api/gemini`,
         {
           method: "POST",
+          credentials: "include",
 
           headers: {
             "Content-Type": "application/json",
