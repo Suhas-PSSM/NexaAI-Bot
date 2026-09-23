@@ -226,14 +226,6 @@ const ChatList = () => {
                 New chat
             </Link>
 
-            <Link
-                className={location.pathname === '/dashboard/temporary' ? 'selected' : ''}
-                to={location.pathname === '/dashboard/temporary' ? '/dashboard' : '/dashboard/temporary'}
-                aria-current={location.pathname === '/dashboard/temporary' ? 'page' : undefined}
-            >
-                Temporary chat
-            </Link>
-
             <hr />
 
             {pinnedChats.length > 0 && (
