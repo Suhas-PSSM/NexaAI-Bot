@@ -1,14 +1,12 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+import "dotenv/config";
 import ImageKit from "@imagekit/nodejs";
 import mongoose from "mongoose";
 import Chat from "./models/chat.js";
 import UserChats from "./models/userChats.js";
 import { clerkMiddleware, getAuth } from "@clerk/express";
 import model from "./gemini.js";
-
-dotenv.config();
 
 const app = express();
 
