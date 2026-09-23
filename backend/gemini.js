@@ -26,7 +26,7 @@ export const getGeminiModel = () => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
     model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
       safetySettings,
       generationConfig: {
         maxOutputTokens: 8192,
