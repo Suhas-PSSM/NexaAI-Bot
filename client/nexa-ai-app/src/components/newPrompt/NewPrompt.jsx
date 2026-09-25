@@ -5,6 +5,7 @@ import Upload from '../upload/Upload';
 import Markdown from 'react-markdown';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/react';
+import DictateButton from '../dictateButton/DictateButton';
 
 const NewPrompt = ({ data, initialImage }) => {
 
@@ -380,6 +381,12 @@ const NewPrompt = ({ data, initialImage }) => {
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           placeholder='Ask me anything...'
+        />
+
+        <DictateButton
+          value={draft}
+          onValueChange={setDraft}
+          disabled={img.isLoading || mutation.isPending}
         />
 
         <button

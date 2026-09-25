@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/react';
 import { IKImage } from 'imagekitio-react';
 import Upload from '../../components/upload/Upload';
+import DictateButton from '../../components/dictateButton/DictateButton';
 
 const DashboardPage = () => {
   const { getToken } = useAuth();
@@ -107,6 +108,11 @@ const DashboardPage = () => {
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             placeholder='Ask me anything...'
+          />
+          <DictateButton
+            value={draft}
+            onValueChange={setDraft}
+            disabled={img.isLoading || mutation.isPending}
           />
           <button
             type="submit"

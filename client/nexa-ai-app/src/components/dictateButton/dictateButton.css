@@ -1,0 +1,73 @@
+.dictateControl{
+    position: relative;
+    flex: 0 0 40px;
+}
+
+.dictateButton{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #605e68;
+    border: none;
+    color: #ececec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+
+    svg{
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+    }
+
+    &:hover:not(:disabled){
+        background-color: #706e79;
+        transform: translateY(-1px);
+    }
+
+    &:focus-visible{
+        outline: 2px solid #e55571;
+        outline-offset: 3px;
+    }
+
+    &:disabled{
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    &.isListening{
+        background-color: #b83f58;
+        animation: dictatePulse 1.4s ease-in-out infinite;
+    }
+}
+
+.dictationStatus{
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    width: max-content;
+    max-width: 240px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    background-color: #3a3645;
+    color: #ececec;
+    font-size: 12px;
+    line-height: 1.3;
+    z-index: 1;
+
+    &.isError{
+        color: #ffb4b4;
+    }
+}
+
+@keyframes dictatePulse{
+    50%{
+        box-shadow: 0 0 0 5px rgba(184, 63, 88, 0.25);
+    }
+}
