@@ -42,7 +42,7 @@
     }
 
     &.isListening{
-        background-color: #b83f58;
+        background-color: #605e68;
         animation: dictatePulse 1.4s ease-in-out infinite;
     }
 }
