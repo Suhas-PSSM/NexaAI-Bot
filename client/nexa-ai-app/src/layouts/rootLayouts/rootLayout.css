@@ -1,6 +1,9 @@
 .rootLayout {
-    padding: 16px 64px;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
     height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
 }
@@ -9,6 +12,8 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex: 0 0 auto;
+    padding: 16px 64px;
 
     .logo {
         display: flex;
@@ -25,10 +30,11 @@ header {
 
 main {
     flex: 1;
+    min-height: 0;
     overflow: hidden;
 }
 
 @media screen and (max-width: 760px){
-    .rootLayout { padding: 10px; }
+    header { padding: 10px 16px; }
     header .logo span { display: none; }
 }
