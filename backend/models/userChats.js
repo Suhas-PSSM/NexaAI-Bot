@@ -28,6 +28,10 @@ const userChatsSchema = new mongoose.Schema({
             default: Date.now,
             required: true,
         },
+         lastMessageAt:{
+            type: Date,
+            default: Date.now,
+         },
         },
     ],
 },

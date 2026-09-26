@@ -27,7 +27,7 @@ app.use(
     },
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
 );
 
@@ -217,6 +217,7 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
             title: text.substring(0, 40),
             pinned: false,
             archived: false,
+            lastMessageAt: new Date(),
           },
         ],
       });
@@ -237,6 +238,7 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
               title: text.substring(0, 40),
               pinned: false,
               archived: false,
+              lastMessageAt: new Date(),
             },
           },
         }
@@ -263,11 +265,6 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
 
   const auth = getAuth(req);
 
-  console.log("========== CLERK DEBUG ==========");
-  console.log("userId:", auth.userId);
-  console.log("sessionId:", auth.sessionId);
-  console.log("========== END DEBUG ==========");
-
   const { userId } = auth;
 
   if (!userId) {
@@ -286,7 +283,7 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
         return first.pinned ? -1 : 1;
       }
 
-      return new Date(second.createdAt) - new Date(first.createdAt);
+      return new Date(second.lastMessageAt || second.createdAt) - new Date(first.lastMessageAt || first.createdAt);
     });
 
     res.status(200).json(chats);
@@ -433,7 +430,7 @@ app.get(
         _id: req.params.id,
         userId,
       });
-
+      if (!chat) return res.status(404).json({ error: "Chat not found" });
       res.status(200).send(chat);
 
     } catch (err) {
@@ -512,6 +509,15 @@ app.put(
             },
           },
         }
+      );
+
+      if (!updatedChat.matchedCount) {
+        return res.status(404).json({ error: "Chat not found" });
+      }
+
+      await UserChats.updateOne(
+        { userId, "chats._id": req.params.id },
+        { $set: { "chats.$.lastMessageAt": new Date() } }
       );
 
       res.status(200).send(updatedChat);
