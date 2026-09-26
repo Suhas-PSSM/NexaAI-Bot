@@ -27,3 +27,8 @@ main {
     flex: 1;
     overflow: hidden;
 }
+
+@media screen and (max-width: 760px){
+    .rootLayout { padding: 10px; }
+    header .logo span { display: none; }
+}

@@ -87,6 +87,7 @@ const NewPrompt = ({ data, initialImage }) => {
           queryKey: ['chat', data._id]
         })
         .then(() => {
+          queryClient.invalidateQueries({ queryKey: ['userChats'] });
 
           if (formRef.current) {
             formRef.current.reset();
@@ -107,8 +108,8 @@ const NewPrompt = ({ data, initialImage }) => {
         });
     },
 
-    onError: (err) => {
-      console.error("Error updating chat:", err);
+    onError: () => {
+      setAnswer('Sorry, your response could not be saved. Please try again.');
     },
   });
 
@@ -228,9 +229,7 @@ const NewPrompt = ({ data, initialImage }) => {
 
       mutation.mutate();
 
-    } catch (err) {
-
-      console.error("Gemini error:", err);
+    } catch {
 
       setAnswer(
         "Sorry, something went wrong while generating the response."
@@ -279,6 +278,8 @@ const NewPrompt = ({ data, initialImage }) => {
 
     hasRun.current = true;
 
+  // This initial prompt must only be submitted once for a freshly-created chat.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 

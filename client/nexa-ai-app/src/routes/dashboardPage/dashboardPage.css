@@ -123,3 +123,9 @@
         }
     }
 }
+
+@media screen and (max-width: 760px){
+    .dashboardPage .texts, .dashboardPage .formContainer{ width: calc(100% - 28px); }
+    .dashboardPage .texts .logo h1{ font-size: 42px; }
+    .dashboardPage .formContainer form{ gap: 10px; padding: 0 12px; }
+}

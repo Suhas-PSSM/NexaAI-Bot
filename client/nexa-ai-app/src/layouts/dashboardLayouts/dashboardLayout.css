@@ -1,15 +1,2 @@
-.dashboardLayout{
-    display: flex;
-    height: 100%;
-    gap: 50px;
-    padding-top: 20px;
-
-    .menu{
-        flex: 1;
-    }
-
-    .content{
-        flex: 4;
-        background-color: #12101b; 
-    }
-}
+.dashboardLayout { position: relative; display: flex; height: 100%; min-height: 0; }.menu { z-index: 3; width: 280px; flex: 0 0 280px; min-height: 0; padding: 12px; border-right: 1px solid rgba(255,255,255,.08); background: #17151e; transition: width 180ms ease, flex-basis 180ms ease, padding 180ms ease, transform 180ms ease; }.content { min-width: 0; flex: 1; background: #12101b; }.sidebarLauncher { position: absolute; z-index: 2; top: 12px; left: 12px; display: flex; align-items: center; gap: 7px; border: 0; border-radius: 10px; padding: 8px; color: #ececec; background: #211e2a; cursor: pointer; }.sidebarLauncher img { width: 25px; height: 25px; }.sidebarLauncher:hover,.sidebarLauncher:focus-visible { outline: 2px solid #8ab4f8; outline-offset: 2px; background: #2c2937; }.sidebarClosed .menu { width: 0; flex-basis: 0; overflow: hidden; padding: 0; border: 0; }.sidebarBackdrop { display: none; }.dashboardLoading { display: grid; height: 100%; place-items: center; }
+@media (max-width:760px) { .menu { position:absolute; top:0; bottom:0; left:0; width:min(86vw,320px); flex-basis:min(86vw,320px); box-shadow:12px 0 32px rgba(0,0,0,.3); }.sidebarClosed .menu { width:min(86vw,320px); flex-basis:min(86vw,320px); padding:12px; transform:translateX(-105%); }.sidebarOpen .sidebarBackdrop { position:absolute; z-index:2; inset:0; display:block; border:0; background:rgba(0,0,0,.42); }.sidebarLauncher { top:8px; left:8px; } }
