@@ -20,7 +20,7 @@
     .newForm{
         width: 50%;
         position: absolute;
-        bottom: 0px;
+        bottom: 24px;
         background-color: #2c2937;
         border-radius: 20px;
         display: flex;
@@ -73,3 +73,7 @@
             }
         }
     }
+
+@media screen and (max-width: 760px){
+    .newForm{ bottom: 14px; }
+}
