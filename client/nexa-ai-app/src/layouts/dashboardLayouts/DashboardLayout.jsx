@@ -13,9 +13,8 @@ const DashboardLayout = () => {
   if (!isLoaded) return <div className="dashboardLoading">Loading workspace…</div>;
   if (!userId) return null;
   return <div className={`dashboardLayout${isSidebarOpen ? ' sidebarOpen' : ' sidebarClosed'}`}>
-    {!isSidebarOpen && <button className="sidebarLauncher" type="button" onClick={() => setIsSidebarOpen(true)} aria-label="Open sidebar" title="Open sidebar"><img src="/assets/logo.png" alt="" /><span>Nexa</span></button>}
     <button className="sidebarBackdrop" type="button" aria-label="Close sidebar" onClick={() => setIsSidebarOpen(false)} />
-    <aside className="menu" aria-label="Chat navigation"><ChatList onClose={() => setIsSidebarOpen(false)} /></aside>
+    <aside className="menu" aria-label="Chat navigation"><ChatList isCollapsed={!isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onExpand={() => setIsSidebarOpen(true)} /></aside>
     <div className="content"><Outlet /></div>
   </div>;
 };

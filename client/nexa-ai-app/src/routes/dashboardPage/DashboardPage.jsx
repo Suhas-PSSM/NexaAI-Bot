@@ -22,6 +22,7 @@ const DashboardPage = () => {
     aiData: {},
   });
   const [draft, setDraft] = useState('');
+  const [mode, setMode] = useState('chat');
 
  const mutation = useMutation({
     mutationFn: async ({ text, filePath }) => {
@@ -77,11 +78,12 @@ const DashboardPage = () => {
 
   return (
     <div className="dashboardPage">
+      <div className="modeSwitch" role="tablist" aria-label="Workspace mode">
+        <button type="button" role="tab" aria-selected={mode === 'chat'} className={mode === 'chat' ? 'active' : ''} onClick={() => setMode('chat')}>Chat</button>
+        <button type="button" role="tab" aria-selected={mode === 'work'} className={mode === 'work' ? 'active' : ''} onClick={() => setMode('work')}>✦ Work</button>
+      </div>
       <div className='texts'>
-        <div className='logo'>
-          <img src="/assets/logo.png" alt="" />
-          <h1>Nexa AI</h1>
-        </div>
+        <h1>{mode === 'chat' ? 'What’s on your mind today?' : 'What would you like to work on?'}</h1>
       </div>
       <div className='formContainer'>
         {img.error && <span className="uploadError">{img.error}</span>}
@@ -107,7 +109,7 @@ const DashboardPage = () => {
             name="text"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder='Ask me anything...'
+            placeholder={mode === 'chat' ? 'Ask anything' : 'Describe your task'}
           />
           <DictateButton
             value={draft}
