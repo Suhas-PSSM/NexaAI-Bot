@@ -20,6 +20,9 @@ const chatSchema = new mongoose.Schema({
                 },
             },
         ],
+        voiceTurnId: {
+            type: String,
+        },
         img: {
             type: String,
             required: false,

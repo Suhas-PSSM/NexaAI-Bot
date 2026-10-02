@@ -183,10 +183,119 @@ app.post("/api/gemini", clerkMiddleware(), async (req, res) => {
   }
 });
 
+// ===============================
+// Provision a short-lived Gemini Live session token
+// ===============================
+
+app.post("/api/voice/session", clerkMiddleware(), async (req, res) => {
+  const { userId } = getAuth(req);
+
+  if (!userId) {
+    return res.status(401).json({ error: "User not authenticated" });
+  }
+
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("GEMINI_API_KEY is not configured for live voice");
+    return res.status(503).json({ error: "Live voice is not configured" });
+  }
+
+  const model = (process.env.GEMINI_LIVE_MODEL || "gemini-3.8-live").replace(/^models\//, "");
+  const now = Date.now();
+  const liveConfig = {
+    responseModalities: ["AUDIO"],
+    inputAudioTranscription: {},
+    outputAudioTranscription: {},
+    sessionResumption: {},
+    contextWindowCompression: {
+      slidingWindow: {},
+    },
+    systemInstruction: {
+      parts: [{
+        text: "You are Nexa AI, a warm, clear, and helpful voice assistant. Speak naturally and concisely. Respond in the language the user speaks.",
+      }],
+    },
+  };
+
+  try {
+    const tokenResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/auth_tokens", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": process.env.GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        uses: 1,
+        expireTime: new Date(now + 30 * 60 * 1000).toISOString(),
+        newSessionExpireTime: new Date(now + 60 * 1000).toISOString(),
+        liveConnectConstraints: {
+          model: `models/${model}`,
+          config: liveConfig,
+        },
+      }),
+    });
+
+    const tokenResult = await tokenResponse.json();
+    if (!tokenResponse.ok) {
+      console.error("Gemini Live token request failed:", tokenResult.error?.message || tokenResponse.status);
+      return res.status(502).json({ error: "Unable to start live voice. Please try again." });
+    }
+
+    if (!tokenResult.name) {
+      console.error("Gemini Live token response did not include a token name");
+      return res.status(502).json({ error: "Unable to start live voice. Please try again." });
+    }
+
+    return res.status(200).json({ token: tokenResult.name, model, config: liveConfig });
+  } catch (err) {
+    console.error("Gemini Live token request failed:", err);
+    return res.status(502).json({ error: "Unable to start live voice. Please try again." });
+  }
+});
+
 
 // ===============================
 // Create New Chat
 // ===============================
+
+app.post("/api/chats/voice", clerkMiddleware(), async (req, res) => {
+  const { userId } = getAuth(req);
+
+  if (!userId) {
+    return res.status(401).json({ error: "User not authenticated" });
+  }
+
+  try {
+    await connect();
+
+    const chat = await new Chat({ userId, history: [] }).save();
+    const createdAt = chat.createdAt || new Date();
+    const userChats = await UserChats.findOneAndUpdate(
+      { userId },
+      {
+        $push: {
+          chats: {
+            _id: chat._id,
+            title: "Voice conversation",
+            pinned: false,
+            createdAt,
+            lastMessageAt: createdAt,
+          },
+        },
+      },
+      { new: true, upsert: true }
+    );
+
+    if (!userChats) {
+      await Chat.deleteOne({ _id: chat._id, userId });
+      return res.status(500).json({ error: "Unable to create voice conversation" });
+    }
+
+    return res.status(201).json({ id: String(chat._id) });
+  } catch (err) {
+    console.error("Error creating voice conversation:", err);
+    return res.status(500).json({ error: "Unable to create voice conversation" });
+  }
+});
 
 app.post("/api/chats", clerkMiddleware(), async (req, res) => {
   await connect();
@@ -274,6 +383,97 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
     res.status(500).send(
       "Error creating chat"
     );
+  }
+});
+
+// ===============================
+// Persist a completed voice turn
+// ===============================
+
+app.post("/api/chats/:id/voice-turn", clerkMiddleware(), async (req, res) => {
+  const { userId } = getAuth(req);
+  const body = req.body || {};
+  const question = typeof body.question === "string" ? body.question.trim() : "";
+  const answer = typeof body.answer === "string" ? body.answer.trim() : "";
+  const turnId = typeof body.turnId === "string" ? body.turnId : "";
+
+  if (!userId) {
+    return res.status(401).json({ error: "User not authenticated" });
+  }
+
+  if (
+    !question ||
+    !answer ||
+    question.length > 20000 ||
+    answer.length > 20000 ||
+    !/^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i.test(turnId)
+  ) {
+    return res.status(400).json({ error: "A valid voice conversation turn is required" });
+  }
+
+  try {
+    await connect();
+
+    const updatedChat = await Chat.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId,
+        history: { $not: { $elemMatch: { voiceTurnId: turnId } } },
+      },
+      {
+        $push: {
+          history: {
+            $each: [
+              { role: "user", parts: [{ text: question }], voiceTurnId: turnId },
+              { role: "model", parts: [{ text: answer }], voiceTurnId: turnId },
+            ],
+          },
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedChat) {
+      const existingChat = await Chat.findOne({
+        _id: req.params.id,
+        userId,
+        "history.voiceTurnId": turnId,
+      }).select("history updatedAt");
+
+      if (!existingChat) {
+        return res.status(404).json({ error: "Chat not found" });
+      }
+
+      await UserChats.updateOne(
+        { userId, "chats._id": req.params.id },
+        {
+          $set: {
+            "chats.$.lastMessageAt": existingChat.updatedAt,
+            ...(existingChat.history.length === 2 && {
+              "chats.$.title": question.slice(0, 40),
+            }),
+          },
+        }
+      );
+      return res.status(200).json({ saved: true, duplicate: true });
+    }
+
+    await UserChats.updateOne(
+      { userId, "chats._id": req.params.id },
+      {
+        $set: {
+          "chats.$.lastMessageAt": new Date(),
+          ...(updatedChat.history.length === 2 && {
+            "chats.$.title": question.slice(0, 40),
+          }),
+        },
+      }
+    );
+
+    return res.status(200).json({ saved: true });
+  } catch (err) {
+    console.error("Error saving voice conversation turn:", err);
+    return res.status(500).json({ error: "Unable to save voice conversation turn" });
   }
 });
 
