@@ -1,9 +1,11 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
+import { randomBytes } from "node:crypto";
 import ImageKit from "@imagekit/nodejs";
 import mongoose from "mongoose";
 import Chat from "./models/chat.js";
+import SharedChat from "./models/sharedChat.js";
 import UserChats from "./models/userChats.js";
 import { clerkMiddleware, getAuth } from "@clerk/express";
 import { getGeminiModel } from "./gemini.js";
@@ -431,6 +433,90 @@ app.delete(
     }
   }
 );
+
+// ===============================
+// Create or refresh a shared chat snapshot
+// ===============================
+
+app.post(
+  "/api/chats/:id/share",
+  clerkMiddleware(),
+  async (req, res) => {
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    try {
+      await connect();
+
+      const chat = await Chat.findOne({
+        _id: req.params.id,
+        userId,
+      }).select("history");
+
+      if (!chat) {
+        return res.status(404).json({ error: "Chat not found" });
+      }
+
+      const sidebarChat = await UserChats.findOne(
+        { userId, "chats._id": req.params.id },
+        { "chats.$": 1 }
+      );
+      const title = sidebarChat?.chats[0]?.title || "Shared conversation";
+      const snapshot = {
+        userId,
+        title,
+        history: chat.history.map((message) => ({
+          role: message.role,
+          parts: message.parts.map((part) => ({ text: part.text })),
+          ...(message.img && { img: message.img }),
+        })),
+      };
+
+      const sharedChat = await SharedChat.findOneAndUpdate(
+        { chatId: req.params.id, userId },
+        {
+          $set: snapshot,
+          $setOnInsert: {
+            chatId: req.params.id,
+            shareId: randomBytes(32).toString("hex"),
+          },
+        },
+        { new: true, upsert: true, runValidators: true }
+      );
+
+      return res.status(200).json({ shareId: sharedChat.shareId });
+    } catch (err) {
+      console.error("Error creating shared chat:", err);
+      return res.status(500).json({ error: "Unable to create a shared link" });
+    }
+  }
+);
+
+// ===============================
+// Get public shared chat snapshot
+// ===============================
+
+app.get("/api/shared-chats/:shareId", async (req, res) => {
+  try {
+    await connect();
+
+    const sharedChat = await SharedChat.findOne({ shareId: req.params.shareId })
+      .select("title history createdAt")
+      .lean();
+
+    if (!sharedChat) {
+      return res.status(404).json({ error: "Shared conversation not found" });
+    }
+
+    return res.status(200).json(sharedChat);
+  } catch (err) {
+    console.error("Error fetching shared chat:", err);
+    return res.status(500).json({ error: "Unable to load shared conversation" });
+  }
+});
 
 // ===============================
 // Get Single Chat
