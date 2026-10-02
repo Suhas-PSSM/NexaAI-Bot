@@ -47,7 +47,7 @@ header.dashboardHeader {
     }
 
     .user {
-        pointer-events: auto;
+        display: none;
     }
 }
 
