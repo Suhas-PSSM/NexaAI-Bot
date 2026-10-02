@@ -216,7 +216,6 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
             _id: savedChat._id,
             title: text.substring(0, 40),
             pinned: false,
-            archived: false,
             lastMessageAt: new Date(),
           },
         ],
@@ -237,7 +236,6 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
               _id: savedChat._id,
               title: text.substring(0, 40),
               pinned: false,
-              archived: false,
               lastMessageAt: new Date(),
             },
           },
@@ -306,7 +304,7 @@ app.patch(
   clerkMiddleware(),
   async (req, res) => {
     const { userId } = getAuth(req);
-    const { title, pinned, archived } = req.body;
+    const { title, pinned } = req.body;
 
     if (!userId) {
       return res.status(401).json({ error: "User not authenticated" });
@@ -328,14 +326,6 @@ app.patch(
       }
 
       updates["chats.$.pinned"] = pinned;
-    }
-
-    if (archived !== undefined) {
-      if (typeof archived !== "boolean") {
-        return res.status(400).json({ error: "Archived must be a boolean" });
-      }
-
-      updates["chats.$.archived"] = archived;
     }
 
     if (!Object.keys(updates).length) {

@@ -19,10 +19,6 @@ const userChatsSchema = new mongoose.Schema({
             type: Boolean,
             default: false,
         },
-         archived:{
-            type: Boolean,
-            default: false,
-        },
          createdAt:{
             type: Date,
             default: Date.now,
