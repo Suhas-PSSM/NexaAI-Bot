@@ -5,6 +5,24 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/react';
 import { useApi } from '../../lib/api';
 
+const getChatTimestamp = (chat, field) => {
+  const timestamp = new Date(chat[field] || chat.createdAt).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
+const compareChatsByRecency = (first, second) => {
+  const pinnedOrder = Number(Boolean(second.pinned)) - Number(Boolean(first.pinned));
+  if (pinnedOrder) return pinnedOrder;
+
+  const activityOrder = getChatTimestamp(second, 'lastMessageAt') - getChatTimestamp(first, 'lastMessageAt');
+  if (activityOrder) return activityOrder;
+
+  const createdOrder = getChatTimestamp(second, 'createdAt') - getChatTimestamp(first, 'createdAt');
+  if (createdOrder) return createdOrder;
+
+  return String(first._id).localeCompare(String(second._id));
+};
+
 const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
   const { getToken, isLoaded, userId } = useAuth();
   const { apiFetch } = useApi();
@@ -37,9 +55,13 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
     onMutate: async ({ id, payload, action }) => {
       await queryClient.cancelQueries({ queryKey: ['userChats'] });
       const previousChats = queryClient.getQueryData(['userChats']);
-      queryClient.setQueryData(['userChats'], chats => action === 'delete'
-        ? chats?.filter(chat => chat._id !== id)
-        : chats?.map(chat => chat._id === id ? { ...chat, ...payload } : chat));
+      queryClient.setQueryData(['userChats'], chats => {
+        if (!chats) return chats;
+        const updatedChats = action === 'delete'
+          ? chats.filter(chat => chat._id !== id)
+          : chats.map(chat => chat._id === id ? { ...chat, ...payload } : chat);
+        return updatedChats.sort(compareChatsByRecency);
+      });
       return { previousChats };
     },
     mutationFn: async ({ id, action, payload }) => {
@@ -66,10 +88,13 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
     },
   });
 
+  const sortedChats = useMemo(() => [...data].sort(compareChatsByRecency), [data]);
   const visibleChats = useMemo(
-    () => data.filter(chat => chat.title.toLowerCase().includes(searchTerm.trim().toLowerCase())),
-    [data, searchTerm],
+    () => sortedChats.filter(chat => chat.title.toLowerCase().includes(searchTerm.trim().toLowerCase())),
+    [sortedChats, searchTerm],
   );
+  const pinnedChats = visibleChats.filter(chat => chat.pinned);
+  const recentChats = visibleChats.filter(chat => !chat.pinned);
 
   useEffect(() => {
     const openSearch = event => {
@@ -181,7 +206,6 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
         </div>
       ) : (
         <>
-          <div className="sectionHeader">Recent chats</div>
           <div className="list recentList">
             {isPending ? <p className="listStatus">Loading conversations…</p>
               : error ? (
@@ -189,9 +213,22 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
                   <p>{error.message}</p>
                   <button type="button" onClick={() => queryClient.invalidateQueries({ queryKey: ['userChats'] })}>Try again</button>
                 </div>
-              ) : visibleChats.length
-                ? visibleChats.map(renderChat)
-                : <p className="listStatus">No conversations yet.</p>}
+              ) : (
+                <>
+                  {pinnedChats.length > 0 && (
+                    <section className="chatSection" aria-label="Pinned chats">
+                      <div className="sectionHeader">Pinned chats</div>
+                      {pinnedChats.map(renderChat)}
+                    </section>
+                  )}
+                  <section className="chatSection" aria-label="Recent chats">
+                    <div className="sectionHeader">Recent chats</div>
+                    {recentChats.length
+                      ? recentChats.map(renderChat)
+                      : pinnedChats.length === 0 && <p className="listStatus">No conversations yet.</p>}
+                  </section>
+                </>
+              )}
           </div>
         </>
       )}
