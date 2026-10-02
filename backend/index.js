@@ -66,6 +66,24 @@ const imagekit = new ImageKit({
   privateKey: process.env.IMAGE_KIT_PRIVATE_KEY,
 });
 
+const getChatTimestamp = (chat, field) => {
+  const timestamp = new Date(chat[field] || chat.createdAt).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
+const compareChatsByRecency = (first, second) => {
+  const pinnedOrder = Number(Boolean(second.pinned)) - Number(Boolean(first.pinned));
+  if (pinnedOrder) return pinnedOrder;
+
+  const activityOrder = getChatTimestamp(second, "lastMessageAt") - getChatTimestamp(first, "lastMessageAt");
+  if (activityOrder) return activityOrder;
+
+  const createdOrder = getChatTimestamp(second, "createdAt") - getChatTimestamp(first, "createdAt");
+  if (createdOrder) return createdOrder;
+
+  return String(first._id).localeCompare(String(second._id));
+};
+
 
 // ===============================
 // ImageKit Authentication
@@ -201,6 +219,7 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
     });
 
     const savedChat = await newChat.save();
+    const createdAt = savedChat.createdAt || new Date();
 
     // CHECK IF USER EXISTS
     const userChats = await UserChats.find({
@@ -216,7 +235,8 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
             _id: savedChat._id,
             title: text.substring(0, 40),
             pinned: false,
-            lastMessageAt: new Date(),
+            createdAt,
+            lastMessageAt: createdAt,
           },
         ],
       });
@@ -236,7 +256,8 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
               _id: savedChat._id,
               title: text.substring(0, 40),
               pinned: false,
-              lastMessageAt: new Date(),
+              createdAt,
+              lastMessageAt: createdAt,
             },
           },
         }
@@ -276,13 +297,7 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
 
     const userChats = await UserChats.findOne({ userId });
 
-    const chats = [...(userChats?.chats || [])].sort((first, second) => {
-      if (Boolean(first.pinned) !== Boolean(second.pinned)) {
-        return first.pinned ? -1 : 1;
-      }
-
-      return new Date(second.lastMessageAt || second.createdAt) - new Date(first.lastMessageAt || first.createdAt);
-    });
+    const chats = [...(userChats?.chats || [])].sort(compareChatsByRecency);
 
     res.status(200).json(chats);
 
