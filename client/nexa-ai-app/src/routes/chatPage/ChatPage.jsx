@@ -66,6 +66,7 @@ const ChatPage = () => {
             <NewPrompt
               data={data}
               initialImage={location.state?.initialImage}
+              startVoice={location.state?.startVoice}
             />
           )}
         </div>

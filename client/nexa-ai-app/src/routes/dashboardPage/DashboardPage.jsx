@@ -22,6 +22,8 @@ const DashboardPage = () => {
     aiData: {},
   });
   const [draft, setDraft] = useState('');
+  const [isCreatingVoiceChat, setIsCreatingVoiceChat] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
 
  const mutation = useMutation({
     mutationFn: async ({ text, filePath }) => {
@@ -75,6 +77,30 @@ const DashboardPage = () => {
     });
   };
 
+  const handleStartVoice = async () => {
+    setIsCreatingVoiceChat(true);
+    setVoiceError('');
+
+    try {
+      const token = await getToken({ skipCache: true });
+      if (!token) throw new Error('Please sign in again before starting voice mode.');
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chats/voice`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to create a voice conversation.');
+
+      await queryClient.invalidateQueries({ queryKey: ['userChats'] });
+      navigate(`/dashboard/chats/${result.id}`, { state: { startVoice: true } });
+    } catch (error) {
+      setVoiceError(error.message || 'Unable to start a voice conversation.');
+    } finally {
+      setIsCreatingVoiceChat(false);
+    }
+  };
+
   return (
     <div className="dashboardPage">
       <div className='texts'>
@@ -85,6 +111,7 @@ const DashboardPage = () => {
       </div>
       <div className='formContainer'>
         {img.error && <span className="uploadError">{img.error}</span>}
+        {voiceError && <span className="uploadError" role="alert">{voiceError}</span>}
         {img.dbData?.filePath ? (
           <IKImage
             className="uploadedImagePreview"
@@ -109,6 +136,16 @@ const DashboardPage = () => {
             onChange={(event) => setDraft(event.target.value)}
             placeholder='Ask me anything...'
           />
+          <button
+            className="voiceHomeButton"
+            type="button"
+            onClick={handleStartVoice}
+            disabled={isCreatingVoiceChat || mutation.isPending || img.isLoading || !!draft.trim()}
+            aria-label="Start voice conversation"
+            title={draft.trim() ? 'Send or clear your draft before starting voice' : 'Start voice conversation'}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Z" /><path d="M19 11a7 7 0 0 1-14 0M12 18v3M8 21h8" /></svg>
+          </button>
           <DictateButton
             value={draft}
             onValueChange={setDraft}

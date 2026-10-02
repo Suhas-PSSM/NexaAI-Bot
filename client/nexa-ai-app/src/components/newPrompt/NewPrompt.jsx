@@ -6,8 +6,9 @@ import Markdown from 'react-markdown';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/react';
 import DictateButton from '../dictateButton/DictateButton';
+import VoiceConversation from '../voiceConversation/VoiceConversation';
 
-const NewPrompt = ({ data, initialImage }) => {
+const NewPrompt = ({ data, initialImage, startVoice = false }) => {
 
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
@@ -389,7 +390,12 @@ const NewPrompt = ({ data, initialImage }) => {
           onValueChange={setDraft}
           disabled={img.isLoading || mutation.isPending}
         />
-
+        <VoiceConversation
+          chatId={data._id}
+          history={data.history}
+          autoOpen={startVoice}
+          disabled={img.isLoading || mutation.isPending}
+        />
         <button
           type="submit"
           disabled={img.isLoading || mutation.isPending || !draft.trim()}
