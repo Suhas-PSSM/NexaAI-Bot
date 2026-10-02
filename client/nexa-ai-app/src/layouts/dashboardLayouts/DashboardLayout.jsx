@@ -35,9 +35,6 @@ const DashboardLayout = () => {
         <button className="railButton" type="button" onClick={() => openSidebar('chats')} aria-label="Recent chats" title="Recent chats">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 11.4a8.2 8.2 0 0 1-8.3 8.2 8.6 8.6 0 0 1-3.8-.9L3 20l1.4-4.4a8 8 0 0 1-1-4.1 8.3 8.3 0 0 1 8.5-8.1 8.2 8.2 0 0 1 8.3 8Z" /></svg>
         </button>
-        <button className="railButton" type="button" onClick={() => openSidebar('library')} aria-label="Archived chats" title="Archived chats">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5 9 3l3 17-5 1.5Z" /><path d="m11 3 5-.5 2 17-5 .5Z" /><path d="m18 4 2-.5L22 20l-2 .5Z" /></svg>
-        </button>
       </div>
       <div className="railProfile"><UserButton /></div>
     </nav>}

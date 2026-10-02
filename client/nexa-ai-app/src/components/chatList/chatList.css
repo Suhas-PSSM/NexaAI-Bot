@@ -19,7 +19,6 @@
 .closeButton,
 .newChatButton,
 .searchButton,
-.libraryButton,
 .chatLink,
 .moreButton,
 .chatMenu button,
@@ -58,8 +57,7 @@
 }
 
 .newChatButton,
-.searchButton,
-.libraryButton {
+.searchButton {
   display: flex;
   width: 100%;
   align-items: center;
@@ -79,9 +77,7 @@
   background: #393545;
 }
 
-.searchButton:hover,
-.libraryButton:hover,
-.libraryButton.selected {
+.searchButton:hover {
   background: #292532;
 }
 
@@ -105,7 +101,13 @@
 .searchResults {
   min-height: 0;
   overflow-y: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.list::-webkit-scrollbar,
+.searchResults::-webkit-scrollbar {
+  display: none;
 }
 
 .recentList {
@@ -296,7 +298,6 @@
 .closeButton:focus-visible,
 .newChatButton:focus-visible,
 .searchButton:focus-visible,
-.libraryButton:focus-visible,
 .chatLink:focus-visible,
 .moreButton:focus-visible,
 .chatMenu button:focus-visible {

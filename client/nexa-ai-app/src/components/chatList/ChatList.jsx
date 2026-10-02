@@ -135,9 +135,6 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
                 <button type="button" role="menuitem" onClick={() => chatMutation.mutate({ id: chat._id, action: 'update', payload: { pinned: !chat.pinned } })}>
                   {chat.pinned ? 'Unpin' : 'Pin'}
                 </button>
-                {!chat.archived && (
-                  <button type="button" role="menuitem" onClick={() => chatMutation.mutate({ id: chat._id, action: 'update', payload: { archived: true } })}>Archive</button>
-                )}
                 <button className="danger" type="button" role="menuitem" onClick={() => {
                   if (window.confirm(`Delete “${chat.title}”? This cannot be undone.`)) {
                     chatMutation.mutate({ id: chat._id, action: 'delete' });
@@ -150,9 +147,6 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
       </div>
     );
   };
-
-  const archivedChats = visibleChats.filter(chat => chat.archived);
-  const recentChats = visibleChats.filter(chat => !chat.archived);
 
   return (
     <div className="chatList">
@@ -171,10 +165,6 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.2" /><path d="m16.2 16.2 4.3 4.3" /></svg>
         <span>Search chats</span><kbd>Ctrl K</kbd>
       </button>
-      <button className={`libraryButton${mode === 'library' ? ' selected' : ''}`} type="button" onClick={() => onModeChange(mode === 'library' ? 'chats' : 'library')}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5 9 3l3 17-5 1.5Z" /><path d="m11 3 5-.5 2 17-5 .5Z" /><path d="m18 4 2-.5L22 20l-2 .5Z" /></svg>
-        <span>Archived chats</span>
-      </button>
       {mode === 'search' ? (
         <div className="searchPanel">
           <div className="searchInputWrap">
@@ -191,7 +181,7 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
         </div>
       ) : (
         <>
-          <div className="sectionHeader">{mode === 'library' ? 'Archived chats' : 'Recent chats'}</div>
+          <div className="sectionHeader">Recent chats</div>
           <div className="list recentList">
             {isPending ? <p className="listStatus">Loading conversations…</p>
               : error ? (
@@ -199,9 +189,9 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
                   <p>{error.message}</p>
                   <button type="button" onClick={() => queryClient.invalidateQueries({ queryKey: ['userChats'] })}>Try again</button>
                 </div>
-              ) : (mode === 'library' ? archivedChats : recentChats).length
-                ? (mode === 'library' ? archivedChats : recentChats).map(renderChat)
-                : <p className="listStatus">{mode === 'library' ? 'No archived chats.' : 'No conversations yet.'}</p>}
+              ) : visibleChats.length
+                ? visibleChats.map(renderChat)
+                : <p className="listStatus">No conversations yet.</p>}
           </div>
         </>
       )}
