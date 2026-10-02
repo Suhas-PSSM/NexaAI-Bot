@@ -13,12 +13,13 @@ const queryClient = new QueryClient();
 const RootLayout = () => {
   const { pathname } = useLocation();
   const isDashboard = pathname.startsWith('/dashboard');
+  const isSharedChat = pathname.startsWith('/share/');
 
   return (
     <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
       <QueryClientProvider client={queryClient}>
     <div className="rootLayout">
-        <header className={isDashboard ? 'dashboardHeader' : ''}>
+        <header className={`${isDashboard ? 'dashboardHeader' : ''}${isSharedChat ? ' sharedChatRootHeader' : ''}`}>
             <Link to="/" className='logo'>
                 <img src="/assets/logo.png" alt=" "/> 
                 <span>NEXA AI</span>

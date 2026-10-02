@@ -9,6 +9,7 @@ import RootLayout from './layouts/rootLayouts/RootLayout';
 import DashboardLayout from './layouts/dashboardLayouts/DashboardLayout';
 import SignInPage from './routes/signInPage/SignInPage';
 import SignUpPage from './routes/signUpPage/SignUpPage'; 
+import SharedChatPage from './routes/sharedChatPage/SharedChatPage';
 
 const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
       {
         path:"/sign-up/*",
         element: <SignUpPage />,
+      },
+      {
+        path: "/share/:shareId",
+        element: <SharedChatPage />,
       },
       {
       element: <DashboardLayout />,

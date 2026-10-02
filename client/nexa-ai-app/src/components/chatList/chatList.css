@@ -290,13 +290,119 @@
   font-size: 12px;
 }
 
+.shareDialogBackdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .65);
+}
+
+.shareDialog {
+  position: relative;
+  width: min(460px, 100%);
+  padding: 28px;
+  border: 1px solid #48414f;
+  border-radius: 16px;
+  background: #211e2a;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+}
+
+.shareDialog h2 {
+  margin: 0 32px 10px 0;
+  color: #fff;
+  font-size: 20px;
+}
+
+.shareDialog > p {
+  margin-bottom: 18px;
+  color: #bcb6c6;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.shareDialogClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  color: #d9d6e1;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.shareDialogClose:hover,
+.shareDialogClose:focus-visible {
+  background: #373240;
+}
+
+.shareLinkControl {
+  display: flex;
+  gap: 8px;
+}
+
+.shareLinkControl input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid #5c5667;
+  border-radius: 8px;
+  padding: 10px;
+  color: #ececec;
+  background: #17151e;
+}
+
+.shareLinkControl button {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 14px;
+  color: #fff;
+  background: #5141a5;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.shareLinkControl button:hover {
+  background: #6251bd;
+}
+
+.shareDialog .shareCopyNotice {
+  margin: 12px 0 0;
+  color: #c7c2d1;
+  font-size: 13px;
+}
+
 .brandButton:focus-visible,
 .closeButton:focus-visible,
 .newChatButton:focus-visible,
 .searchButton:focus-visible,
 .chatLink:focus-visible,
 .moreButton:focus-visible,
-.chatMenu button:focus-visible {
+.chatMenu button:focus-visible,
+.shareDialogClose:focus-visible,
+.shareLinkControl input:focus-visible,
+.shareLinkControl button:focus-visible {
   outline: 2px solid #8ab4f8;
   outline-offset: 1px;
+}
+
+@media (max-width: 480px) {
+  .shareDialog {
+    padding: 24px 18px;
+  }
+
+  .shareLinkControl {
+    flex-direction: column;
+  }
+
+  .shareLinkControl button {
+    min-height: 42px;
+  }
 }

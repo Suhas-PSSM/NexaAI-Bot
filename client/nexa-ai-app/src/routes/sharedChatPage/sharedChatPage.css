@@ -1,0 +1,109 @@
+.sharedChatPage {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  background: #12101b;
+}
+
+.sharedChatHeader {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  color: #aaa4b4;
+  font-size: 13px;
+}
+
+.sharedChatBrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ececec;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.sharedChatBrand img {
+  width: 28px;
+  height: 28px;
+}
+
+.sharedChatScroll {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sharedChatScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.sharedChatContent {
+  width: min(760px, 100%);
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  color: #ececec;
+}
+
+.sharedChatContent h1 {
+  margin-bottom: 28px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.sharedMessage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 18px;
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+}
+
+.sharedMessage.user {
+  width: fit-content;
+  max-width: 85%;
+  align-self: flex-end;
+  border-radius: 18px;
+  background: #2c2937;
+}
+
+.sharedMessage p,
+.sharedMessage li {
+  margin: 8px 0;
+}
+
+.sharedMessageImage {
+  max-width: 100%;
+  max-height: 420px;
+  align-self: flex-start;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+.sharedChatStatus {
+  padding: 24px 0;
+  color: #c7c2d1;
+}
+
+@media (max-width: 760px) {
+  .sharedChatHeader {
+    padding: 10px 16px;
+  }
+
+  .sharedChatContent {
+    padding: 24px 14px 48px;
+  }
+
+  .sharedMessage {
+    padding: 14px;
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './chatList.css';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -34,6 +34,9 @@ const ChatList = ({ onClose, onOpen, onPinnedChatsChange, mode, onModeChange }) 
   const [editingTitle, setEditingTitle] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [notice, setNotice] = useState('');
+  const [shareUrl, setShareUrl] = useState('');
+  const [copyNotice, setCopyNotice] = useState('');
+  const shareLinkInput = useRef(null);
 
   const { isPending, error, data = [] } = useQuery({
     queryKey: ['userChats'],
@@ -88,6 +91,25 @@ const ChatList = ({ onClose, onOpen, onPinnedChatsChange, mode, onModeChange }) 
     },
   });
 
+  const shareMutation = useMutation({
+    mutationFn: async (chatId) => {
+      const response = await apiFetch(`${import.meta.env.VITE_API_URL}/api/chats/${chatId}/share`, {
+        method: 'POST',
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to create a share link.');
+      return result.shareId;
+    },
+    onSuccess: (shareId) => {
+      setShareUrl(`${window.location.origin}/share/${shareId}`);
+      setCopyNotice('');
+      setOpenMenuId(null);
+    },
+    onError: (shareError) => {
+      setNotice(shareError.message);
+    },
+  });
+
   const sortedChats = useMemo(() => [...data].sort(compareChatsByRecency), [data]);
   const visibleChats = useMemo(
     () => sortedChats.filter(chat => chat.title.toLowerCase().includes(searchTerm.trim().toLowerCase())),
@@ -118,6 +140,17 @@ const ChatList = ({ onClose, onOpen, onPinnedChatsChange, mode, onModeChange }) 
     }
   }, [mode]);
 
+  useEffect(() => {
+    if (!shareUrl) return undefined;
+    const closeOnEscape = event => {
+      if (event.key === 'Escape') setShareUrl('');
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    shareLinkInput.current?.focus();
+    shareLinkInput.current?.select();
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [shareUrl]);
+
   const go = path => {
     navigate(path);
     if (window.matchMedia('(max-width: 760px)').matches) onClose();
@@ -129,6 +162,21 @@ const ChatList = ({ onClose, onOpen, onPinnedChatsChange, mode, onModeChange }) 
       return;
     }
     chatMutation.mutate({ id, action: 'update', payload: { title: editingTitle } });
+  };
+
+  const copyShareLink = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        throw new Error('Clipboard access is unavailable.');
+      }
+      setCopyNotice('Link copied.');
+    } catch {
+      shareLinkInput.current?.select();
+      const copied = typeof document.execCommand === 'function' && document.execCommand('copy');
+      setCopyNotice(copied ? 'Link copied.' : 'Select the link above and copy it.');
+    }
   };
 
   const renderChat = chat => {
@@ -160,6 +208,10 @@ const ChatList = ({ onClose, onOpen, onPinnedChatsChange, mode, onModeChange }) 
             {openMenuId === chat._id && (
               <div className="chatMenu" role="menu">
                 <button type="button" role="menuitem" onClick={() => { setEditingChatId(chat._id); setEditingTitle(chat.title); setOpenMenuId(null); }}>Rename</button>
+                <button type="button" role="menuitem" disabled={shareMutation.isPending} onClick={() => {
+                  setNotice('');
+                  shareMutation.mutate(chat._id);
+                }}>{shareMutation.isPending ? 'Creating link…' : 'Share'}</button>
                 <button type="button" role="menuitem" onClick={() => chatMutation.mutate({ id: chat._id, action: 'update', payload: { pinned: !chat.pinned } })}>
                   {chat.pinned ? 'Unpin' : 'Pin'}
                 </button>
@@ -236,6 +288,22 @@ const ChatList = ({ onClose, onOpen, onPinnedChatsChange, mode, onModeChange }) 
         </>
       )}
       {notice && <div className="chatNotice" role="status">{notice}</div>}
+      {shareUrl && (
+        <div className="shareDialogBackdrop" onMouseDown={event => {
+          if (event.target === event.currentTarget) setShareUrl('');
+        }}>
+          <section className="shareDialog" role="dialog" aria-modal="true" aria-labelledby="shareDialogTitle">
+            <button className="shareDialogClose" type="button" onClick={() => setShareUrl('')} aria-label="Close share dialog">×</button>
+            <h2 id="shareDialogTitle">Share conversation</h2>
+            <p>Anyone with this link can view a read-only snapshot of this conversation.</p>
+            <div className="shareLinkControl">
+              <input ref={shareLinkInput} readOnly value={shareUrl} aria-label="Share link" onFocus={event => event.target.select()} />
+              <button type="button" onClick={copyShareLink}>Copy link</button>
+            </div>
+            {copyNotice && <p className="shareCopyNotice" role="status">{copyNotice}</p>}
+          </section>
+        </div>
+      )}
     </div>
   );
 };

@@ -51,6 +51,10 @@ header.dashboardHeader {
     }
 }
 
+header.sharedChatRootHeader {
+    display: none;
+}
+
 @media screen and (max-width: 760px){
     header { padding: 10px 16px; }
     header.dashboardHeader { padding: 10px 16px; }
