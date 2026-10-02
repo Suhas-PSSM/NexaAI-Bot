@@ -295,9 +295,30 @@ app.post("/api/chats", clerkMiddleware(), async (req, res) => {
   try {
     await connect();
 
-    const userChats = await UserChats.findOne({ userId });
+    const userChats = await UserChats.findOne({ userId }).lean();
+    const sidebarChats = userChats?.chats || [];
+    const chatsMissingActivity = sidebarChats.filter((chat) => !chat.lastMessageAt);
+    const chatActivity = chatsMissingActivity.length
+      ? await Chat.find({
+          userId,
+          _id: { $in: chatsMissingActivity.map((chat) => chat._id) },
+        })
+          .select("_id createdAt updatedAt")
+          .lean()
+      : [];
+    const activityByChatId = new Map(
+      chatActivity.map((chat) => [String(chat._id), chat.updatedAt || chat.createdAt])
+    );
 
-    const chats = [...(userChats?.chats || [])].sort(compareChatsByRecency);
+    const chats = sidebarChats
+      .map((chat) => ({
+        ...chat,
+        lastMessageAt:
+          chat.lastMessageAt ||
+          activityByChatId.get(String(chat._id)) ||
+          chat.createdAt,
+      }))
+      .sort(compareChatsByRecency);
 
     res.status(200).json(chats);
 

@@ -26,7 +26,6 @@ const userChatsSchema = new mongoose.Schema({
         },
          lastMessageAt:{
             type: Date,
-            default: Date.now,
          },
         },
     ],
