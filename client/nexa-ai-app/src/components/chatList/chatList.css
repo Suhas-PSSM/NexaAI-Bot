@@ -363,14 +363,15 @@
   border-radius: 8px;
   padding: 0 14px;
   color: #fff;
-  background: #5141a5;
+  background: #605e68;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .shareLinkControl button:hover {
-  background: #6251bd;
+  background: #706e79;
 }
 
 .shareDialog .shareCopyNotice {
