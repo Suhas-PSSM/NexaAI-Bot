@@ -9,6 +9,7 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.localStorage.getItem('nexa-sidebar-open') !== 'false');
   const [sidebarMode, setSidebarMode] = useState('chats');
+  const [hasPinnedChats, setHasPinnedChats] = useState(false);
   useEffect(() => { if (isLoaded && !userId) navigate('/sign-in'); }, [isLoaded, userId, navigate]);
   useEffect(() => { window.localStorage.setItem('nexa-sidebar-open', String(isSidebarOpen)); }, [isSidebarOpen]);
   if (!isLoaded) return <div className="dashboardLoading">Loading workspace…</div>;
@@ -32,6 +33,11 @@ const DashboardLayout = () => {
         <button className="railButton" type="button" onClick={() => openSidebar('search')} aria-label="Search chats" title="Search chats">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.2" /><path d="m16.2 16.2 4.3 4.3" /></svg>
         </button>
+        {hasPinnedChats && (
+          <button className="railButton" type="button" onClick={() => openSidebar('chats')} aria-label="Pinned chats" title="Pinned chats">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 5 5-4 1-4 4-1 5-2-2-5 5-1-1 5-5-2-2 5-1 4-4Z" /></svg>
+          </button>
+        )}
         <button className="railButton" type="button" onClick={() => openSidebar('chats')} aria-label="Recent chats" title="Recent chats">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 11.4a8.2 8.2 0 0 1-8.3 8.2 8.6 8.6 0 0 1-3.8-.9L3 20l1.4-4.4a8 8 0 0 1-1-4.1 8.3 8.3 0 0 1 8.5-8.1 8.2 8.2 0 0 1 8.3 8Z" /></svg>
         </button>
@@ -40,7 +46,13 @@ const DashboardLayout = () => {
     </nav>}
     <button className="sidebarBackdrop" type="button" aria-label="Close sidebar" onClick={() => setIsSidebarOpen(false)} />
     <aside className="menu" aria-label="Chat navigation">
-      <ChatList onClose={() => setIsSidebarOpen(false)} onOpen={openSidebar} mode={sidebarMode} onModeChange={setSidebarMode} />
+      <ChatList
+        onClose={() => setIsSidebarOpen(false)}
+        onOpen={openSidebar}
+        onPinnedChatsChange={setHasPinnedChats}
+        mode={sidebarMode}
+        onModeChange={setSidebarMode}
+      />
       <div className="sidebarProfile"><UserButton /></div>
     </aside>
     <div className="content"><Outlet /></div>

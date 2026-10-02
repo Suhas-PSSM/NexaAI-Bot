@@ -23,7 +23,7 @@ const compareChatsByRecency = (first, second) => {
   return String(first._id).localeCompare(String(second._id));
 };
 
-const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
+const ChatList = ({ onClose, onOpen, onPinnedChatsChange, mode, onModeChange }) => {
   const { getToken, isLoaded, userId } = useAuth();
   const { apiFetch } = useApi();
   const queryClient = useQueryClient();
@@ -95,6 +95,10 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
   );
   const pinnedChats = visibleChats.filter(chat => chat.pinned);
   const recentChats = visibleChats.filter(chat => !chat.pinned);
+
+  useEffect(() => {
+    onPinnedChatsChange(data.some(chat => chat.pinned));
+  }, [data, onPinnedChatsChange]);
 
   useEffect(() => {
     const openSearch = event => {
