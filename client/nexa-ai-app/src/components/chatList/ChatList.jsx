@@ -140,7 +140,6 @@ const ChatList = ({ onClose, onOpen, mode, onModeChange }) => {
         ) : (
           <button className="chatLink" type="button" onClick={() => go(`/dashboard/chats/${chat._id}`)} aria-current={active ? 'page' : undefined}>
             <span className="chatTitle">{chat.title}</span>
-            {chat.pinned && <span className="pinMark" aria-label="Pinned">⌖</span>}
           </button>
         )}
         {editingChatId !== chat._id && (
