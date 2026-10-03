@@ -62,8 +62,8 @@
 
 .voiceOrb {
   position: relative;
-  width: clamp(76px, 9vw, 104px);
-  height: clamp(76px, 9vw, 104px);
+  width: clamp(64px, 7vw, 84px);
+  height: clamp(64px, 7vw, 84px);
   flex: 0 0 auto;
   border-radius: 50%;
   background:
@@ -105,7 +105,7 @@
 
 @keyframes voiceOrbFloat {
   50% {
-    transform: scale(1.06);
+    transform: scale(1.035);
     box-shadow: 0 0 76px rgba(48, 102, 255, .7), inset 0 -8px 22px rgba(18, 42, 150, .2);
   }
 }
@@ -283,8 +283,8 @@
   }
 
   .voiceOrb {
-    width: 72px;
-    height: 72px;
+    width: 60px;
+    height: 60px;
   }
 
   .voiceDock {
