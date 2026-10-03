@@ -9,7 +9,7 @@ import SharedChat from "./models/sharedChat.js";
 import UserChats from "./models/userChats.js";
 import { clerkMiddleware, getAuth } from "@clerk/express";
 import { getGeminiModel } from "./gemini.js";
-import { createLiveTokenRequest } from "./liveVoice.js";
+import { createLiveSetupConfig, createLiveTokenRequest } from "./liveVoice.js";
 
 const app = express();
 
@@ -237,7 +237,11 @@ app.post("/api/voice/session", clerkMiddleware(), async (req, res) => {
       return res.status(502).json({ error: "Unable to start live voice. Please try again." });
     }
 
-    return res.status(200).json({ token: tokenResult.name, model, config: liveConfig });
+    return res.status(200).json({
+      token: tokenResult.name,
+      model,
+      config: createLiveSetupConfig(liveConfig),
+    });
   } catch (err) {
     console.error("Gemini Live token request failed:", err);
     return res.status(502).json({ error: "Unable to start live voice. Please try again." });
