@@ -278,7 +278,7 @@ app.post("/api/chats/voice", clerkMiddleware(), async (req, res) => {
           },
         },
       },
-      { new: true, upsert: true }
+      { returnDocument: "after", upsert: true }
     );
 
     if (!userChats) {
@@ -426,7 +426,7 @@ app.post("/api/chats/:id/voice-turn", clerkMiddleware(), async (req, res) => {
           },
         },
       },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!updatedChat) {
@@ -572,7 +572,7 @@ app.patch(
       const userChats = await UserChats.findOneAndUpdate(
         { userId, "chats._id": req.params.id },
         { $set: updates },
-        { new: true }
+        { returnDocument: "after" }
       );
 
       if (!userChats) {
@@ -680,7 +680,7 @@ app.post(
             shareId: randomBytes(32).toString("hex"),
           },
         },
-        { new: true, upsert: true, runValidators: true }
+        { returnDocument: "after", upsert: true, runValidators: true }
       );
 
       return res.status(200).json({ shareId: sharedChat.shareId });
