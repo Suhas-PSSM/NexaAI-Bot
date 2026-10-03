@@ -79,6 +79,11 @@
             flex: 0 0 40px;
             padding: 9px;
             color: #ececec;
+            background-color: #217bfe;
+
+            &:hover:not(:disabled){
+                background-color: #398aff;
+            }
         }
 
         .composerSubmitButton{
