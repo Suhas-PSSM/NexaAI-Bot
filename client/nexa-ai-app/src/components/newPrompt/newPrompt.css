@@ -30,6 +30,51 @@
         padding: 0px 20px;
         box-sizing: border-box;
 
+        &.voiceMode{
+            background: transparent;
+            padding: 0;
+
+            .voiceDock{
+                flex: 1 1 auto;
+                min-width: 0;
+                width: 100%;
+            }
+
+            .voiceDock button.voiceMuteButton,
+            .voiceDock button.voiceCloseButton,
+            .voiceDock button.voiceRetryButton,
+            .voiceDock button.voiceRetrySaveButton{
+                display: grid;
+                flex: 0 0 auto;
+                padding: 0;
+                border: 0;
+                border-radius: 50%;
+            }
+
+            .voiceDock button.voiceRetryButton,
+            .voiceDock button.voiceRetrySaveButton{
+                display: block;
+                border-radius: 999px;
+                padding: 0 12px;
+            }
+
+            .voiceDock button.voiceMuteButton{
+                width: 40px;
+                height: 40px;
+                background: #343438;
+            }
+
+            .voiceDock button.voiceMuteButton.isMuted{
+                background: #493236;
+            }
+
+            .voiceDock button.voiceCloseButton{
+                width: 40px;
+                height: 40px;
+                background: #2878e8;
+            }
+        }
+
         input{
             flex: 1;
             padding: 20px;

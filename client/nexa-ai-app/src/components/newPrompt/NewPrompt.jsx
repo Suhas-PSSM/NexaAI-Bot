@@ -15,6 +15,7 @@ const NewPrompt = ({ data, initialImage, startVoice = false }) => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [draft, setDraft] = useState('');
+  const [voiceActive, setVoiceActive] = useState(false);
 
   const [img, setImg] = useState({
     isLoading: false,
@@ -363,41 +364,46 @@ const NewPrompt = ({ data, initialImage, startVoice = false }) => {
       {/* NEW PROMPT FORM */}
 
       <form
-        className='newForm'
+        className={`newForm${voiceActive ? ' voiceMode' : ''}`}
         onSubmit={handleSubmit}
         ref={formRef}
       >
 
-        <Upload setImg={setImg} />
+        {!voiceActive && (
+          <>
+            <Upload setImg={setImg} />
 
-        <input
-          id='file'
-          type='file'
-          multiple={false}
-          hidden
-        />
+            <input
+              id='file'
+              type='file'
+              multiple={false}
+              hidden
+            />
 
-        <input
-          type='text'
-          name='text'
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder='Ask me anything...'
-        />
+            <input
+              type='text'
+              name='text'
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder='Ask me anything...'
+            />
 
-        <DictateButton
-          value={draft}
-          onValueChange={setDraft}
-          disabled={img.isLoading || mutation.isPending}
-        />
+            <DictateButton
+              value={draft}
+              onValueChange={setDraft}
+              disabled={img.isLoading || mutation.isPending}
+            />
+          </>
+        )}
         <VoiceConversation
           chatId={data._id}
           history={data.history}
           autoOpen={startVoice}
           disabled={img.isLoading || mutation.isPending}
-          showLauncher={!draft.trim()}
+          showLauncher={!draft.trim() || voiceActive}
+          onActiveChange={setVoiceActive}
         />
-        {draft.trim() && (
+        {!voiceActive && draft.trim() && (
           <button
             className="composerSubmitButton"
             type="submit"

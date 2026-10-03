@@ -38,7 +38,7 @@ const getMicrophoneError = error => {
   return error?.message || 'Unable to start the microphone. Please try again.';
 };
 
-const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = false, showLauncher = true }) => {
+const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = false, showLauncher = true, onActiveChange }) => {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -49,12 +49,19 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
   const [liveTurn, setLiveTurn] = useState({ question: '', answer: '' });
   const [failedTurns, setFailedTurns] = useState([]);
   const [isRetryingSave, setIsRetryingSave] = useState(false);
+  const transcriptRef = useRef(null);
   const sessionRef = useRef(null);
   const startAttemptRef = useRef(null);
   const startRef = useRef(null);
   const startInProgressRef = useRef(false);
   const autoStartRequestedRef = useRef(false);
   const [isStarting, setIsStarting] = useState(false);
+
+  useEffect(() => {
+    if (transcriptRef.current) {
+      transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
+    }
+  }, [liveTurn, transcript]);
 
   const stopPlayback = useCallback(session => {
     for (const source of session.playingSources) {
@@ -357,6 +364,7 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
     };
     startAttemptRef.current = attempt;
     setIsOpen(true);
+    onActiveChange?.(true);
     setError('');
     setTranscript([]);
     setLiveTurn({ question: '', answer: '' });
@@ -458,6 +466,13 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
     setIsMuted(false);
   }, [releaseSession]);
 
+  const closeVoice = useCallback(() => {
+    cancelStart();
+    endSession();
+    setIsOpen(false);
+    onActiveChange?.(false);
+  }, [cancelStart, endSession, onActiveChange]);
+
   const toggleMute = () => {
     const session = sessionRef.current;
     if (!session) return;
@@ -476,14 +491,12 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
     if (!isOpen) return undefined;
     const closeOnEscape = event => {
       if (event.key === 'Escape') {
-        cancelStart();
-        endSession();
-        setIsOpen(false);
+        closeVoice();
       }
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [cancelStart, endSession, isOpen]);
+  }, [closeVoice, isOpen]);
 
   const phaseLabel = {
     requesting: 'Requesting microphone access…',
@@ -496,7 +509,7 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
 
   return (
     <>
-      {showLauncher && (
+      {showLauncher && !isOpen && (
         <button
           className="voiceLaunchButton"
           type="button"
@@ -511,15 +524,12 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
         </button>
       )}
       {isOpen && (
+        <>
           <section className="voiceOverlay" role="region" aria-labelledby="voiceTitle">
-            <div className="voicePanel">
             <div className="voiceStage">
               <div className={`voiceOrb ${phase}`} aria-hidden="true" />
               <h2 id="voiceTitle">Nexa AI</h2>
-              <p className="voiceStatus" role={error || failedTurns.length ? 'alert' : 'status'}>
-                {error || (failedTurns.length ? 'Some voice turns could not be saved.' : phaseLabel)}
-              </p>
-              <div className="voiceTranscript" aria-live="polite">
+              <div className="voiceTranscript" aria-live="polite" ref={transcriptRef}>
                 {transcript.map(item => (
                   <div className="voiceTurn" key={item.id}>
                     <p><span>You</span>{item.question}</p>
@@ -534,52 +544,48 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
                 )}
               </div>
             </div>
-            <div className="voiceDock">
-              <div className="voiceDockStatus" aria-hidden="true">
-                <span className={`voiceStatusIndicator ${phase}`} />
-                <span>{isMuted ? 'Microphone muted' : phaseLabel}</span>
-              </div>
-              <div className="voiceDockActions">
-                {(phase === 'error' || (!sessionRef.current && !isStarting && phase !== 'requesting' && phase !== 'connecting')) && (
-                  <button className="voiceRetryButton" type="button" onClick={start}>Try again</button>
-                )}
-                <button
-                  className={`voiceMuteButton${isMuted ? ' isMuted' : ''}`}
-                  type="button"
-                  onClick={toggleMute}
-                  disabled={!sessionRef.current || phase === 'error'}
-                  aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
-                  aria-pressed={isMuted}
-                  title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
-                >
-                  {isMuted ? (
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" /><path d="M19 11a7 7 0 0 1-14 0M12 18v3M8 21h8M3 3l18 18" /></svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" /><path d="M19 11a7 7 0 0 1-14 0M12 18v3M8 21h8" /></svg>
-                  )}
-                </button>
-                <button
-                  className="voiceCloseButton"
-                  type="button"
-                  onClick={() => {
-                    cancelStart();
-                    endSession();
-                    setIsOpen(false);
-                  }}
-                  aria-label="End voice conversation"
-                  title="End voice conversation"
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
-                </button>
-              </div>
-            </div>
-            {failedTurns.length > 0 && (
-              <button className="voiceRetrySaveButton" type="button" onClick={retryFailedSaves} disabled={isRetryingSave}>
-                {isRetryingSave ? 'Retrying save…' : `Retry saving ${failedTurns.length} ${failedTurns.length === 1 ? 'turn' : 'turns'}`}
-              </button>
-            )}
-            </div>
           </section>
+          <div className="voiceDock">
+            <div className="voiceDockStatus" role={error ? 'alert' : 'status'}>
+              <span className={`voiceStatusIndicator ${phase}`} />
+              <span>{error || (failedTurns.length ? 'Some voice turns could not be saved.' : isMuted ? 'Microphone muted' : phaseLabel)}</span>
+            </div>
+            <div className="voiceDockActions">
+              {(phase === 'error' || (!sessionRef.current && !isStarting && phase !== 'requesting' && phase !== 'connecting')) && (
+                <button className="voiceRetryButton" type="button" onClick={start}>Try again</button>
+              )}
+              <button
+                className={`voiceMuteButton${isMuted ? ' isMuted' : ''}`}
+                type="button"
+                onClick={toggleMute}
+                disabled={!sessionRef.current || phase === 'error'}
+                aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+                aria-pressed={isMuted}
+                title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+              >
+                {isMuted ? (
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" /><path d="M19 11a7 7 0 0 1-14 0M12 18v3M8 21h8M3 3l18 18" /></svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" /><path d="M19 11a7 7 0 0 1-14 0M12 18v3M8 21h8" /></svg>
+                )}
+              </button>
+              <button
+                className="voiceCloseButton"
+                type="button"
+                onClick={closeVoice}
+                aria-label="End voice conversation"
+                title="End voice conversation"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+              </button>
+              {failedTurns.length > 0 && (
+                <button className="voiceRetrySaveButton" type="button" onClick={retryFailedSaves} disabled={isRetryingSave}>
+                  {isRetryingSave ? 'Retrying save…' : `Retry ${failedTurns.length} unsaved ${failedTurns.length === 1 ? 'turn' : 'turns'}`}
+                </button>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </>
   );
