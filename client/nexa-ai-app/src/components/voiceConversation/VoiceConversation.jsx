@@ -4,6 +4,7 @@ import { useAuth } from '@clerk/react';
 import { useQueryClient } from '@tanstack/react-query';
 import './voiceConversation.css';
 import { pcm16Base64FromFloat32 } from './voiceAudio';
+import { parseLiveServerMessage } from './liveMessage';
 
 const LIVE_SOCKET_URL = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained';
 const INPUT_SAMPLE_RATE = 16000;
@@ -171,6 +172,7 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
   const connectLiveSession = (session, resumeHandle = '') => {
     const socketUrl = `${LIVE_SOCKET_URL}?access_token=${encodeURIComponent(session.token)}`;
     const socket = new WebSocket(socketUrl);
+    socket.binaryType = 'arraybuffer';
     session.socket = socket;
     setPhase(resumeHandle ? 'reconnecting' : 'connecting');
 
@@ -187,15 +189,18 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
       }));
     };
 
-    socket.onmessage = event => {
+    socket.onmessage = async event => {
       if (session.closing) return;
       let message;
       try {
-        message = JSON.parse(event.data);
-      } catch {
-        setError('Received an invalid response from the live voice service.');
+        message = await parseLiveServerMessage(event.data);
+      } catch (parseError) {
+        console.error('Failed to parse a Gemini Live message:', parseError);
+        session.fatalError = 'Received an invalid response from the live voice service.';
+        socket.close(1007, 'Invalid Live API message');
         return;
       }
+      if (session.closing || session.socket !== socket) return;
 
       if (message.error) {
         session.fatalError = message.error.message || 'The live voice service reported an error.';
