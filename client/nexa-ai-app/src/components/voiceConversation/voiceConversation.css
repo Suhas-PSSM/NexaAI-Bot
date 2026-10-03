@@ -52,25 +52,24 @@
 .voiceStage {
   display: flex;
   width: 100%;
-  max-height: min(44vh, 380px);
   min-height: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .voiceOrb {
   position: relative;
   width: clamp(64px, 7vw, 84px);
-  aspect-ratio: 1;
-  height: auto;
-  flex: 0 0 auto;
+  height: clamp(64px, 7vw, 84px);
+  flex: 0 0 clamp(64px, 7vw, 84px);
+  display: block;
   border-radius: 50%;
   background:
-    radial-gradient(ellipse at 48% 57%, rgba(247, 250, 255, .98) 0%, rgba(222, 232, 255, .95) 20%, transparent 43%),
-    radial-gradient(ellipse at 52% 68%, #a6b9ff 0%, #658eff 50%, #2356e8 78%, #153ab6 100%);
-  box-shadow: 0 0 56px rgba(48, 102, 255, .46), inset 0 -8px 22px rgba(18, 42, 150, .28);
+    radial-gradient(circle at 48% 57%, rgba(247, 250, 255, .98) 0%, rgba(222, 232, 255, .95) 20%, transparent 43%),
+    radial-gradient(circle at 52% 48%, #a6b9ff 0%, #658eff 50%, #2356e8 78%, #153ab6 100%);
+  box-shadow: 0 0 34px rgba(48, 102, 255, .38), inset 0 -6px 16px rgba(18, 42, 150, .24);
   animation: voiceOrbFloat 4s ease-in-out infinite;
 }
 
@@ -87,8 +86,8 @@
 
 @keyframes voiceOrbFloat {
   50% {
-    transform: scale(1.035);
-    box-shadow: 0 0 76px rgba(48, 102, 255, .7), inset 0 -8px 22px rgba(18, 42, 150, .2);
+    transform: scale(1.025);
+    box-shadow: 0 0 42px rgba(48, 102, 255, .5), inset 0 -6px 16px rgba(18, 42, 150, .2);
   }
 }
 
@@ -266,7 +265,8 @@
 
   .voiceOrb {
     width: 60px;
-    height: auto;
+    height: 60px;
+    flex-basis: 60px;
   }
 
   .voiceDock {
