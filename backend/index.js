@@ -9,6 +9,7 @@ import SharedChat from "./models/sharedChat.js";
 import UserChats from "./models/userChats.js";
 import { clerkMiddleware, getAuth } from "@clerk/express";
 import { getGeminiModel } from "./gemini.js";
+import { createLiveTokenRequest } from "./liveVoice.js";
 
 const app = express();
 
@@ -200,7 +201,6 @@ app.post("/api/voice/session", clerkMiddleware(), async (req, res) => {
   }
 
   const model = (process.env.GEMINI_LIVE_MODEL || "gemini-3.8-live").replace(/^models\//, "");
-  const now = Date.now();
   const liveConfig = {
     responseModalities: ["AUDIO"],
     inputAudioTranscription: {},
@@ -223,15 +223,7 @@ app.post("/api/voice/session", clerkMiddleware(), async (req, res) => {
         "Content-Type": "application/json",
         "x-goog-api-key": process.env.GEMINI_API_KEY,
       },
-      body: JSON.stringify({
-        uses: 1,
-        expireTime: new Date(now + 30 * 60 * 1000).toISOString(),
-        newSessionExpireTime: new Date(now + 60 * 1000).toISOString(),
-        liveConnectConstraints: {
-          model: `models/${model}`,
-          config: liveConfig,
-        },
-      }),
+      body: JSON.stringify(createLiveTokenRequest(model, liveConfig)),
     });
 
     const tokenResult = await tokenResponse.json();
