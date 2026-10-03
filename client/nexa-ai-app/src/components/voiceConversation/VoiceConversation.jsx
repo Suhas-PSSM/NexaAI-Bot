@@ -51,12 +51,10 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
   const [isRetryingSave, setIsRetryingSave] = useState(false);
   const sessionRef = useRef(null);
   const startAttemptRef = useRef(null);
+  const startRef = useRef(null);
   const startInProgressRef = useRef(false);
+  const autoStartRequestedRef = useRef(false);
   const [isStarting, setIsStarting] = useState(false);
-
-  useEffect(() => {
-    if (autoOpen) setIsOpen(true);
-  }, [autoOpen]);
 
   const stopPlayback = useCallback(session => {
     for (const source of session.playingSources) {
@@ -436,6 +434,16 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
     }
   };
 
+  startRef.current = start;
+  useEffect(() => {
+    if (!autoOpen || disabled || autoStartRequestedRef.current) return;
+    const timer = window.setTimeout(() => {
+      autoStartRequestedRef.current = true;
+      void startRef.current?.();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [autoOpen, disabled]);
+
   const endSession = useCallback(() => {
     releaseSession(sessionRef.current);
     setPhase('idle');
@@ -484,7 +492,7 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
         <button
           className="voiceLaunchButton"
           type="button"
-          onClick={() => { setIsOpen(true); setError(''); }}
+          onClick={start}
           disabled={disabled}
           aria-label="Start voice conversation"
           title="Start voice conversation"
