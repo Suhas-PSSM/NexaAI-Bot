@@ -127,11 +127,12 @@
                 height: 40px;
                 flex: 0 0 40px;
                 padding: 9px;
-                color: #ececec;
+                color: #ffffff;
+                background-color: #217bfe;
                 transition: background-color 0.2s ease, transform 0.2s ease;
 
                 &:hover:not(:disabled){
-                    background-color: #706e79;
+                    background-color: #398aff;
                     transform: translateY(-1px);
                 }
 
@@ -143,6 +144,31 @@
                     stroke-linecap: round;
                     stroke-linejoin: round;
                     stroke-width: 1.8;
+                }
+            }
+
+            .composerSubmitButton{
+                width: 40px;
+                height: 40px;
+                flex: 0 0 40px;
+                padding: 9px;
+                color: #ffffff;
+                background: #217bfe;
+                transition: background-color 0.2s ease, transform 0.2s ease;
+
+                &:hover:not(:disabled){
+                    background-color: #398aff;
+                    transform: translateY(-1px);
+                }
+
+                svg{
+                    width: 22px;
+                    height: 22px;
+                    fill: none;
+                    stroke: currentColor;
+                    stroke-linecap: round;
+                    stroke-linejoin: round;
+                    stroke-width: 2;
                 }
             }
         }

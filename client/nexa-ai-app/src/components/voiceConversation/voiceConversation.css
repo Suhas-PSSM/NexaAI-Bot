@@ -6,14 +6,14 @@
   place-items: center;
   border: 0;
   border-radius: 50%;
-  color: #ececec;
-  background: #605e68;
+  color: #ffffff;
+  background: #217bfe;
   cursor: pointer;
   transition: background-color .2s ease, transform .2s ease;
 }
 
 .voiceLaunchButton:hover:not(:disabled) {
-  background: #706e79;
+  background: #398aff;
   transform: translateY(-1px);
 }
 
@@ -33,6 +33,7 @@
 }
 
 .voiceLaunchButton:focus-visible,
+.voiceHomeButton:focus-visible,
 .voicePanel button:focus-visible {
   outline: 2px solid #8ab4f8;
   outline-offset: 3px;

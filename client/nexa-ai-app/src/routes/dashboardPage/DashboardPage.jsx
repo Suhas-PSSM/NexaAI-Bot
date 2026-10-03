@@ -136,27 +136,37 @@ const DashboardPage = () => {
             onChange={(event) => setDraft(event.target.value)}
             placeholder='Ask me anything...'
           />
-          <button
-            className="voiceHomeButton"
-            type="button"
-            onClick={handleStartVoice}
-            disabled={isCreatingVoiceChat || mutation.isPending || img.isLoading || !!draft.trim()}
-            aria-label="Start voice conversation"
-            title={draft.trim() ? 'Send or clear your draft before starting voice' : 'Start voice conversation'}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Z" /><path d="M19 11a7 7 0 0 1-14 0M12 18v3M8 21h8" /></svg>
-          </button>
           <DictateButton
             value={draft}
             onValueChange={setDraft}
             disabled={img.isLoading || mutation.isPending}
           />
-          <button
-            type="submit"
-            disabled={img.isLoading || mutation.isPending || !draft.trim()}
-          >
-            <img src="/assets/send.png" alt="" />
-          </button>
+          {draft.trim() ? (
+            <button
+              className="composerSubmitButton"
+              type="submit"
+              disabled={img.isLoading || mutation.isPending}
+              aria-label="Send message"
+              title="Send message"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 19V5M5 12l7-7 7 7" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              className="voiceHomeButton"
+              type="button"
+              onClick={handleStartVoice}
+              disabled={isCreatingVoiceChat || mutation.isPending || img.isLoading}
+              aria-label="Start voice conversation"
+              title="Start voice conversation"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 10v4M9 6v12M13 3v18M17 7v10M21 10v4" />
+              </svg>
+            </button>
+          )}
         </form>
       </div>
     </div>

@@ -395,16 +395,21 @@ const NewPrompt = ({ data, initialImage, startVoice = false }) => {
           history={data.history}
           autoOpen={startVoice}
           disabled={img.isLoading || mutation.isPending}
+          showLauncher={!draft.trim()}
         />
-        <button
-          type="submit"
-          disabled={img.isLoading || mutation.isPending || !draft.trim()}
-        >
-          <img
-            src="/assets/send.png"
-            alt="Send"
-          />
-        </button>
+        {draft.trim() && (
+          <button
+            className="composerSubmitButton"
+            type="submit"
+            disabled={img.isLoading || mutation.isPending}
+            aria-label="Send message"
+            title="Send message"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </button>
+        )}
 
       </form>
     </>

@@ -39,7 +39,7 @@ const getMicrophoneError = error => {
   return error?.message || 'Unable to start the microphone. Please try again.';
 };
 
-const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = false }) => {
+const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = false, showLauncher = true }) => {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -480,16 +480,20 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
 
   return (
     <>
-      <button
-        className="voiceLaunchButton"
-        type="button"
-        onClick={() => { setIsOpen(true); setError(''); }}
-        disabled={disabled}
-        aria-label="Start voice conversation"
-        title="Start voice conversation"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Z" /><path d="M19 11a7 7 0 0 1-14 0M12 18v3M8 21h8" /></svg>
-      </button>
+      {showLauncher && (
+        <button
+          className="voiceLaunchButton"
+          type="button"
+          onClick={() => { setIsOpen(true); setError(''); }}
+          disabled={disabled}
+          aria-label="Start voice conversation"
+          title="Start voice conversation"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 10v4M9 6v12M13 3v18M17 7v10M21 10v4" />
+          </svg>
+        </button>
+      )}
       {isOpen && createPortal(
         <div className="voiceOverlay" onMouseDown={event => {
           if (event.target === event.currentTarget && !sessionRef.current) {
