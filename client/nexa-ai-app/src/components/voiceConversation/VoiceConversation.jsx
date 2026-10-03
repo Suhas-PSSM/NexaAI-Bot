@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useAuth } from '@clerk/react';
 import { useQueryClient } from '@tanstack/react-query';
 import './voiceConversation.css';
@@ -47,6 +46,7 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
   const [isMuted, setIsMuted] = useState(false);
   const [error, setError] = useState('');
   const [transcript, setTranscript] = useState([]);
+  const [liveTurn, setLiveTurn] = useState({ question: '', answer: '' });
   const [failedTurns, setFailedTurns] = useState([]);
   const [isRetryingSave, setIsRetryingSave] = useState(false);
   const sessionRef = useRef(null);
@@ -251,6 +251,12 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
         session.outputText = appendTranscript(session.outputText, modelTranscript);
         setPhase('speaking');
       }
+      if (userTranscript || modelTranscript) {
+        setLiveTurn({
+          question: session.inputText,
+          answer: session.outputText,
+        });
+      }
 
       for (const part of serverContent.modelTurn?.parts || []) {
         if (part.inlineData?.data) appendAudio(session, part.inlineData.data, part.inlineData.mimeType);
@@ -261,6 +267,7 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
         const answer = session.outputText.trim();
         session.inputText = '';
         session.outputText = '';
+        setLiveTurn({ question: '', answer: '' });
 
         if (question && answer) {
           setTranscript(items => [...items.slice(-5), { question, answer, id: `${Date.now()}-${items.length}` }]);
@@ -352,6 +359,7 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
     setIsOpen(true);
     setError('');
     setTranscript([]);
+    setLiveTurn({ question: '', answer: '' });
     setIsMuted(false);
     setPhase('requesting');
 
@@ -502,15 +510,9 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
           </svg>
         </button>
       )}
-      {isOpen && createPortal(
-        <div className="voiceOverlay" onMouseDown={event => {
-          if (event.target === event.currentTarget && !sessionRef.current) {
-            cancelStart();
-            endSession();
-            setIsOpen(false);
-          }
-        }}>
-          <section className="voicePanel" role="dialog" aria-modal="true" aria-labelledby="voiceTitle">
+      {isOpen && (
+          <section className="voiceOverlay" role="region" aria-labelledby="voiceTitle">
+            <div className="voicePanel">
             <div className="voiceStage">
               <div className={`voiceOrb ${phase}`} aria-hidden="true" />
               <h2 id="voiceTitle">Nexa AI</h2>
@@ -524,6 +526,12 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
                     <p><span>Nexa AI</span>{item.answer}</p>
                   </div>
                 ))}
+                {(liveTurn.question || liveTurn.answer) && (
+                  <div className="voiceTurn voiceTurnLive" aria-label="Current voice turn">
+                    {liveTurn.question && <p><span>You</span>{liveTurn.question}</p>}
+                    {liveTurn.answer && <p><span>Nexa AI</span>{liveTurn.answer}</p>}
+                  </div>
+                )}
               </div>
             </div>
             <div className="voiceDock">
@@ -570,9 +578,8 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
                 {isRetryingSave ? 'Retrying save…' : `Retry saving ${failedTurns.length} ${failedTurns.length === 1 ? 'turn' : 'turns'}`}
               </button>
             )}
+            </div>
           </section>
-        </div>,
-        document.body,
       )}
     </>
   );

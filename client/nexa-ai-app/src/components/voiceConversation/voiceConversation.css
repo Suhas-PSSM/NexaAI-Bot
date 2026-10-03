@@ -34,53 +34,58 @@
 
 .voiceLaunchButton:focus-visible,
 .voiceHomeButton:focus-visible,
-.voicePanel button:focus-visible {
+.voicePanel button:focus-visible,
+.voiceDock button:focus-visible {
   outline: 2px solid #8ab4f8;
   outline-offset: 3px;
 }
 
 .voiceOverlay {
-  position: fixed;
-  z-index: 1000;
-  inset: 0;
-  display: flex;
-  background: #000;
+  position: absolute;
+  z-index: 20;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  width: min(760px, calc(100vw - 28px));
+  transform: translateX(-50%);
 }
 
 .voicePanel {
-  position: relative;
-  display: grid;
+  display: flex;
   width: 100%;
-  height: 100%;
-  min-height: 320px;
-  grid-template-rows: 1fr;
-  place-items: center;
+  max-height: min(48vh, 440px);
+  flex-direction: column;
+  align-items: center;
   overflow: hidden;
-  padding: 24px 16px 104px;
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 24px;
+  padding: 18px 20px 12px;
   color: #ececec;
-  background: #000;
+  background: linear-gradient(160deg, rgba(31, 32, 41, .98), rgba(13, 14, 19, .98));
+  box-shadow: 0 16px 54px rgba(0, 0, 0, .46);
+  backdrop-filter: blur(18px);
 }
 
 .voiceStage {
   display: flex;
   width: 100%;
-  max-height: 100%;
+  min-height: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .voiceStage h2 {
-  margin: 26px 0 8px;
+  margin: 12px 0 4px;
   color: #f5f5f5;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 600;
 }
 
 .voiceOrb {
   position: relative;
-  width: clamp(104px, 17vw, 152px);
-  height: clamp(104px, 17vw, 152px);
+  width: clamp(78px, 10vw, 112px);
+  height: clamp(78px, 10vw, 112px);
   flex: 0 0 auto;
   border-radius: 50%;
   background:
@@ -128,10 +133,10 @@
 }
 
 .voiceStatus {
-  min-height: 20px;
+  min-height: 18px;
   margin: 0;
   color: #b8b8bd;
-  font-size: 14px;
+  font-size: 12px;
   text-align: center;
 }
 
@@ -140,10 +145,10 @@
 }
 
 .voiceTranscript {
-  position: absolute;
-  bottom: 102px;
-  width: min(640px, calc(100% - 32px));
-  max-height: min(20vh, 180px);
+  width: min(640px, 100%);
+  max-height: min(17vh, 140px);
+  flex: 0 1 auto;
+  margin: 10px 0 0;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -153,14 +158,19 @@
 }
 
 .voiceTurn {
-  margin: 10px 0;
+  margin: 7px 0;
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 9px 12px;
   color: #e9e9ed;
   background: rgba(255, 255, 255, .08);
   font-size: 13px;
   line-height: 1.5;
   overflow-wrap: anywhere;
+}
+
+.voiceTurnLive {
+  border: 1px solid rgba(83, 139, 255, .28);
+  background: rgba(47, 79, 136, .2);
 }
 
 .voiceTurn p + p {
@@ -176,22 +186,17 @@
 }
 
 .voiceDock {
-  position: absolute;
-  right: 16px;
-  bottom: max(20px, env(safe-area-inset-bottom));
-  left: 16px;
   display: flex;
-  width: min(856px, calc(100% - 32px));
-  min-height: 58px;
+  width: 100%;
+  min-height: 48px;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  margin: 0 auto;
+  gap: 10px;
+  margin-top: 10px;
   border: 1px solid rgba(255, 255, 255, .07);
   border-radius: 999px;
-  padding: 7px 8px 7px 20px;
+  padding: 5px 6px 5px 14px;
   background: #1c1c1e;
-  box-shadow: 0 8px 36px rgba(0, 0, 0, .36);
 }
 
 .voiceDockStatus,
@@ -236,9 +241,9 @@
 .voiceMuteButton,
 .voiceCloseButton {
   display: grid;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
   place-items: center;
   border: 0;
   border-radius: 50%;
@@ -296,7 +301,7 @@
 }
 
 .voiceRetryButton {
-  min-height: 40px;
+  min-height: 36px;
   border: 0;
   border-radius: 999px;
   padding: 0 16px;
@@ -313,11 +318,8 @@
 }
 
 .voiceRetrySaveButton {
-  position: absolute;
-  bottom: 92px;
-  left: 50%;
   min-height: 34px;
-  transform: translateX(-50%);
+  margin-top: 8px;
   border: 1px solid rgba(255, 170, 168, .45);
   border-radius: 999px;
   padding: 0 14px;
@@ -351,43 +353,40 @@
 
 @media (max-width: 520px) {
   .voicePanel {
-    padding-right: 12px;
-    padding-left: 12px;
+    max-height: min(54vh, 420px);
+    border-radius: 20px;
+    padding: 14px 12px 10px;
   }
 
   .voiceOrb {
-    width: 104px;
-    height: 104px;
+    width: 76px;
+    height: 76px;
   }
 
   .voiceStage h2 {
-    margin-top: 22px;
-    font-size: 20px;
+    margin-top: 9px;
+    font-size: 16px;
   }
 
   .voiceDock {
-    right: 10px;
-    left: 10px;
-    width: calc(100% - 20px);
-    padding-left: 14px;
+    min-height: 44px;
+    margin-top: 8px;
+    padding-left: 10px;
   }
 
   .voiceDockStatus {
-    font-size: 12px;
+    gap: 7px;
+    font-size: 11px;
   }
 
   .voiceDockActions {
-    gap: 7px;
+    gap: 6px;
   }
 
   .voiceMuteButton,
   .voiceCloseButton {
-    width: 40px;
-    height: 40px;
-    flex-basis: 40px;
-  }
-
-  .voiceTranscript {
-    bottom: 94px;
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
   }
 }
