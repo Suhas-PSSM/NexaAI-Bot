@@ -38,30 +38,21 @@ const getMicrophoneError = error => {
   return error?.message || 'Unable to start the microphone. Please try again.';
 };
 
-const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = false, showLauncher = true, onActiveChange }) => {
+const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = false, showLauncher = true, onActiveChange, onLiveTurnChange }) => {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [phase, setPhase] = useState('idle');
   const [isMuted, setIsMuted] = useState(false);
   const [error, setError] = useState('');
-  const [transcript, setTranscript] = useState([]);
-  const [liveTurn, setLiveTurn] = useState({ question: '', answer: '' });
   const [failedTurns, setFailedTurns] = useState([]);
   const [isRetryingSave, setIsRetryingSave] = useState(false);
-  const transcriptRef = useRef(null);
   const sessionRef = useRef(null);
   const startAttemptRef = useRef(null);
   const startRef = useRef(null);
   const startInProgressRef = useRef(false);
   const autoStartRequestedRef = useRef(false);
   const [isStarting, setIsStarting] = useState(false);
-
-  useEffect(() => {
-    if (transcriptRef.current) {
-      transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
-    }
-  }, [liveTurn, transcript]);
 
   const stopPlayback = useCallback(session => {
     for (const source of session.playingSources) {
@@ -115,14 +106,20 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
     ]);
   };
 
-  const saveTurn = (session, question, answer) => {
-    const failedTurn = { question, answer, id: crypto.randomUUID() };
+  const saveTurn = (session, question, answer, turnId) => {
+    const failedTurn = { question, answer, id: turnId };
     session.saveQueue = session.saveQueue
       .then(() => persistTurn(failedTurn.id, question, answer))
+      .then(() => {
+        onLiveTurnChange?.(null, turnId);
+        return true;
+      })
       .catch(saveError => {
         setFailedTurns(turns => [...turns, failedTurn]);
         setError(saveError.message);
+        return false;
       });
+    return session.saveQueue;
   };
 
   const retryFailedSaves = async () => {
@@ -135,6 +132,7 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
       try {
         await persistTurn(turn.id, turn.question, turn.answer);
         setFailedTurns(turns => turns.filter(item => item.id !== turn.id));
+        onLiveTurnChange?.(null, turn.id);
       } catch (saveError) {
         setError(saveError.message);
         break;
@@ -253,16 +251,21 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
 
       const userTranscript = serverContent.inputTranscription?.text || '';
       const modelTranscript = serverContent.outputTranscription?.text || '';
+      if ((userTranscript || modelTranscript) && !session.liveTurnId) {
+        session.liveTurnId = crypto.randomUUID();
+      }
       if (userTranscript) session.inputText = appendTranscript(session.inputText, userTranscript);
       if (modelTranscript) {
         session.outputText = appendTranscript(session.outputText, modelTranscript);
         setPhase('speaking');
       }
       if (userTranscript || modelTranscript) {
-        setLiveTurn({
+        const updatedTurn = {
+          id: session.liveTurnId,
           question: session.inputText,
           answer: session.outputText,
-        });
+        };
+        onLiveTurnChange?.(updatedTurn);
       }
 
       for (const part of serverContent.modelTurn?.parts || []) {
@@ -272,15 +275,16 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
       if (serverContent.turnComplete) {
         const question = session.inputText.trim();
         const answer = session.outputText.trim();
+        const turnId = session.liveTurnId;
         session.inputText = '';
         session.outputText = '';
-        setLiveTurn({ question: '', answer: '' });
+        session.liveTurnId = '';
 
         if (question && answer) {
-          setTranscript(items => [...items.slice(-5), { question, answer, id: `${Date.now()}-${items.length}` }]);
-          saveTurn(session, question, answer);
+          saveTurn(session, question, answer, turnId);
         } else if (question || answer) {
           setError('The voice transcription was incomplete, so this turn could not be saved.');
+          session.liveTurnId = turnId || '';
         }
         setPhase('listening');
       }
@@ -366,8 +370,6 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
     setIsOpen(true);
     onActiveChange?.(true);
     setError('');
-    setTranscript([]);
-    setLiveTurn({ question: '', answer: '' });
     setIsMuted(false);
     setPhase('requesting');
 
@@ -422,6 +424,7 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
         nextPlaybackTime: audioContext.currentTime,
         inputText: '',
         outputText: '',
+        liveTurnId: '',
         saveQueue: Promise.resolve(),
         resumptionHandle: '',
         reconnectAttempts: 0,
@@ -525,24 +528,9 @@ const VoiceConversation = ({ chatId, history = [], autoOpen = false, disabled = 
       )}
       {isOpen && (
         <>
-          <section className="voiceOverlay" role="region" aria-labelledby="voiceTitle">
+          <section className="voiceOverlay" role="region" aria-label="Voice conversation">
             <div className="voiceStage">
               <div className={`voiceOrb ${phase}`} aria-hidden="true" />
-              <h2 id="voiceTitle">Nexa AI</h2>
-              <div className="voiceTranscript" aria-live="polite" ref={transcriptRef}>
-                {transcript.map(item => (
-                  <div className="voiceTurn" key={item.id}>
-                    <p><span>You</span>{item.question}</p>
-                    <p><span>Nexa AI</span>{item.answer}</p>
-                  </div>
-                ))}
-                {(liveTurn.question || liveTurn.answer) && (
-                  <div className="voiceTurn voiceTurnLive" aria-label="Current voice turn">
-                    {liveTurn.question && <p><span>You</span>{liveTurn.question}</p>}
-                    {liveTurn.answer && <p><span>Nexa AI</span>{liveTurn.answer}</p>}
-                  </div>
-                )}
-              </div>
             </div>
           </section>
           <div className="voiceDock">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import { IKImage } from "imagekitio-react";
 import './newPrompt.css';
 import Upload from '../upload/Upload';
@@ -16,6 +16,7 @@ const NewPrompt = ({ data, initialImage, startVoice = false }) => {
   const [answer, setAnswer] = useState('');
   const [draft, setDraft] = useState('');
   const [voiceActive, setVoiceActive] = useState(false);
+  const [voiceTurns, setVoiceTurns] = useState([]);
 
   const [img, setImg] = useState({
     isLoading: false,
@@ -38,7 +39,21 @@ const NewPrompt = ({ data, initialImage, startVoice = false }) => {
     endRef.current?.scrollIntoView({
       behavior: 'smooth'
     });
-  }, [data, question, answer, img.dbData]);
+  }, [data, question, answer, img.dbData, voiceTurns]);
+
+  const handleLiveVoiceTurn = (turn, turnId) => {
+    if (!turn) {
+      setVoiceTurns(turnId
+        ? turns => turns.filter(item => item.id !== turnId)
+        : []);
+      return;
+    }
+
+    setVoiceTurns(turns => [
+      ...turns.filter(item => item.id !== turn.id),
+      turn,
+    ]);
+  };
 
 
   // ==========================================
@@ -352,6 +367,16 @@ const NewPrompt = ({ data, initialImage, startVoice = false }) => {
         </div>
       )}
 
+      {voiceTurns.map(turn => (
+        <Fragment key={turn.id}>
+          {turn.question && <div className="message user">{turn.question}</div>}
+          {turn.answer && (
+            <div className="message">
+              <Markdown>{turn.answer}</Markdown>
+            </div>
+          )}
+        </Fragment>
+      ))}
 
       {/* SCROLL TARGET */}
 
@@ -402,6 +427,7 @@ const NewPrompt = ({ data, initialImage, startVoice = false }) => {
           disabled={img.isLoading || mutation.isPending}
           showLauncher={!draft.trim() || voiceActive}
           onActiveChange={setVoiceActive}
+          onLiveTurnChange={handleLiveVoiceTurn}
         />
         {!voiceActive && draft.trim() && (
           <button
