@@ -5,14 +5,33 @@ import { useLocation } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import { IKImage } from 'imagekitio-react';
 import { useAuth } from '@clerk/react';
+import { useRef, useState } from 'react';
 
 const ChatPage = () => {
 
   const { getToken } = useAuth();
+  const wrapperRef = useRef(null);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
   const location = useLocation();
   const path = location.pathname
   const chatId = path.split('/').pop();
+
+  const handleWrapperScroll = () => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    setShowScrollToBottom(
+      wrapper.scrollHeight - wrapper.scrollTop - wrapper.clientHeight > 24
+    );
+  };
+
+  const scrollToBottom = () => {
+    wrapperRef.current?.scrollTo({
+      top: wrapperRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
+  };
 
   const { isPending, error, data} = useQuery({
             queryKey: ['chat', chatId],
@@ -36,7 +55,7 @@ const ChatPage = () => {
 
   return (
     <div className="ChatPage">
-      <div className="wrapper">
+      <div className="wrapper" ref={wrapperRef} onScroll={handleWrapperScroll}>
         <div className="chat">
           {isPending ? "Loading..." : error ? "Something went wrong" : data?.history?.map((message, i) => (
             <>
@@ -71,6 +90,19 @@ const ChatPage = () => {
           )}
         </div>
       </div>
+      {showScrollToBottom && (
+        <button
+          className="scrollToBottom"
+          type="button"
+          onClick={scrollToBottom}
+          aria-label="Scroll to latest message"
+          title="Scroll to latest message"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14M5 12l7 7 7-7" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 };
